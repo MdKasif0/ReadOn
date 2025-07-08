@@ -27,7 +27,7 @@ export function AuthButton() {
 
   if (!user) {
     return (
-      <Link href="/login" legacyBehavior passHref>
+      <Link href="/login">
         <Button variant="outline">Login</Button>
       </Link>
     );

@@ -51,7 +51,7 @@ export function MainSidebar() {
         <SidebarMenu>
           {categories.map((item) => (
             <SidebarMenuItem key={item.name}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={
                     !pathname.startsWith("/bookmarks") &&
@@ -71,7 +71,7 @@ export function MainSidebar() {
       <SidebarFooter>
         <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/bookmarks" legacyBehavior passHref>
+                <Link href="/bookmarks">
                     <SidebarMenuButton 
                         isActive={pathname === "/bookmarks"}
                         tooltip="Bookmarks"
