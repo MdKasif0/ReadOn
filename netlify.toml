@@ -6,6 +6,10 @@
   command = "npm run build"
   publish = ".next"
 
+# This plugin is required to correctly build and serve Next.js apps on Netlify.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 # Configuration for Netlify Functions
 # The `fetch-news-cron` function is a scheduled function.
 # The cron schedule "0 */2 * * *" means "at minute 0 of every 2nd hour".
