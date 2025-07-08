@@ -35,18 +35,24 @@ function NewsFeed() {
     setIsLoading(true);
     setError(null);
     
-    const currentCategorySlug = category || "general";
-    const cacheKey = `readon-cache-${currentCategorySlug}-${country}-${language}`;
+    const isSearch = !!query;
+    const cacheKey = isSearch
+      ? `readon-search-cache-${query}-${language}`
+      : `readon-category-cache-${category || "general"}-${country}-${language}`;
 
-    if (!forceRefresh && !query) {
+    if (!forceRefresh) {
       try {
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const { timestamp, articles: cachedArticles } = JSON.parse(cached);
           if (Date.now() - timestamp < REFRESH_INTERVAL) {
             setArticles(cachedArticles);
-            const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
-            setPageTitle(categoryDetails?.name || "For You");
+            if (isSearch) {
+              setPageTitle(`Search results for "${query}"`);
+            } else {
+              const categoryDetails = newsCategories.find((c) => c.slug === (category || 'general'));
+              setPageTitle(categoryDetails?.name || "For You");
+            }
             setIsLoading(false);
             return;
           }
@@ -59,32 +65,45 @@ function NewsFeed() {
 
     try {
       let result;
-      if (query) {
+      if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
         result = await articleSearch({ query, language });
       } else {
-        const categoryDetails = newsCategories.find(
-          (c) => c.slug === currentCategorySlug
-        );
+        const currentCategorySlug = category || 'general';
+        const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
         result = await articleSearch({ category: currentCategorySlug, country, language });
-        
-        if (result.results.length > 0) {
-          try {
-            const cacheData = {
-              timestamp: Date.now(),
-              articles: result.results,
-            };
-            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-          } catch (e) {
-            console.error("Failed to write to cache", e);
-          }
+      }
+
+      setArticles(result.results);
+
+      if (result.results.length > 0) {
+        try {
+          const cacheData = {
+            timestamp: Date.now(),
+            articles: result.results,
+          };
+          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        } catch (e) {
+          console.error("Failed to write to cache", e);
         }
       }
-      setArticles(result.results);
     } catch (err) {
-      console.error(err);
-      setError("Failed to fetch news articles. Please try again later.");
+      console.error("Failed to fetch articles:", err);
+      // Fallback to cache on error
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { articles: cachedArticles } = JSON.parse(cached);
+          setArticles(cachedArticles);
+          setError("Could not fetch latest news. Showing older results.");
+        } else {
+          setError("Failed to fetch news articles. Please try again later.");
+        }
+      } catch (cacheError) {
+        console.error("Cache fallback failed:", cacheError);
+        setError("Failed to fetch news articles. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -93,6 +112,7 @@ function NewsFeed() {
   useEffect(() => {
     fetchArticles();
     
+    // Auto-refresh for category feeds, not searches
     if (!query) {
       const intervalId = setInterval(() => {
         fetchArticles(true);

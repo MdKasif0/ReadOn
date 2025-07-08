@@ -55,12 +55,12 @@ export async function articleSearch(
     const language = input.language || 'en';
     url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
       input.query
-    )}&lang=${language}&max=9&apikey=${apiKey}`;
+    )}&lang=${language}&max=10&apikey=${apiKey}`;
   } else {
     const category = input.category || 'general';
     const country = input.country || 'us';
     const language = input.language || 'en';
-    url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=${language}&country=${country}&max=9&apikey=${apiKey}`;
+    url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=${language}&country=${country}&max=10&apikey=${apiKey}`;
   }
 
   try {

@@ -1,53 +1,60 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { Button } from "./ui/button";
-
-const searchSchema = z.object({
-  query: z.string().min(1, "Search query cannot be empty"),
-});
 
 export function SearchForm({ onSearch }: { onSearch?: () => void }) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof searchSchema>>({
-    resolver: zodResolver(searchSchema),
-    defaultValues: { query: "" },
-  });
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  const [query, setQuery] = useState(initialQuery);
+  const debouncedQuery = useDebounce(query, 500);
 
-  function onSubmit(values: z.infer<typeof searchSchema>) {
-    router.push(`/?q=${encodeURIComponent(values.query)}`);
+  // Syncs the input field if the URL is changed by other means (e.g. back/forward buttons)
+  useEffect(() => {
+    if (initialQuery !== query) {
+      setQuery(initialQuery);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery]);
+
+  useEffect(() => {
+    const trimmedQuery = debouncedQuery.trim();
+    if (trimmedQuery && trimmedQuery !== (searchParams.get("q") || "")) {
+      router.push(`/?q=${encodeURIComponent(trimmedQuery)}`);
+      if (onSearch) {
+        onSearch();
+      }
+    } else if (!trimmedQuery && searchParams.get("q")) {
+      router.push(`/`);
+      if (onSearch) {
+        onSearch();
+      }
+    }
+  }, [debouncedQuery, router, onSearch, searchParams]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push(`/?q=${encodeURIComponent(query.trim())}`);
     if (onSearch) {
       onSearch();
     }
-  }
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="relative w-full max-w-lg">
-        <FormField
-          control={form.control}
-          name="query"
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input {...field} placeholder="Search articles..." className="pl-10 h-10" />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
+    <form onSubmit={handleSubmit} className="relative w-full max-w-lg">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search articles..."
+          className="pl-10 h-10"
         />
-         <Button type="submit" size="sm" className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7" variant="ghost">
-            Search
-        </Button>
-      </form>
-    </Form>
+      </div>
+    </form>
   );
 }
