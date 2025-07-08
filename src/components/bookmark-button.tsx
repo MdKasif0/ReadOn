@@ -11,9 +11,10 @@ import { useRouter } from "next/navigation";
 
 interface BookmarkButtonProps {
   article: Article;
+  className?: string;
 }
 
-export function BookmarkButton({ article }: BookmarkButtonProps) {
+export function BookmarkButton({ article, className }: BookmarkButtonProps) {
   const { user } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const router = useRouter();
@@ -38,7 +39,7 @@ export function BookmarkButton({ article }: BookmarkButtonProps) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-             <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground/50 cursor-not-allowed" disabled>
+             <Button variant="ghost" size="icon" className={cn("rounded-full text-muted-foreground/50 cursor-not-allowed", className)} disabled>
                 <Bookmark className="h-5 w-5" />
              </Button>
           </TooltipTrigger>
@@ -59,7 +60,8 @@ export function BookmarkButton({ article }: BookmarkButtonProps) {
             size="icon"
             onClick={handleBookmarkClick}
             className={cn("rounded-full text-accent-foreground/80 transition-colors hover:text-accent-foreground hover:bg-black/10 active:bg-black/20",
-              bookmarked && "text-accent-foreground bg-black/10"
+              bookmarked && "text-accent-foreground bg-black/10",
+              className
             )}
           >
             <Bookmark className={cn("h-5 w-5 transition-transform", bookmarked && "fill-current scale-110")} />
