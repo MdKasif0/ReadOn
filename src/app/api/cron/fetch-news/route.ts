@@ -9,6 +9,7 @@ import type { Article } from '@/lib/types';
  * It fetches news for all categories from the GNews API and stores them in Firestore.
  * To stay within the GNews free tier (100 requests/day), this endpoint
  * should be called periodically (e.g., every 2 hours), as each run makes one API request per category.
+ * This can be configured in `netlify.toml` for Netlify deployments.
  */
 export async function GET() {
   const apiKey = process.env.GNEWS_API_KEY;
