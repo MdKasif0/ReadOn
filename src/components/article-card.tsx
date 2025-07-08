@@ -39,7 +39,7 @@ export function ArticleCard({ article, index }: ArticleCardProps) {
             />
         </Link>
       </CardHeader>
-      <CardContent className="flex-grow p-3 sm:p-4">
+      <CardContent className="flex-grow p-2 sm:p-4">
         <CardTitle className="text-lg leading-snug">
           <Link
             href={article.url}
@@ -51,7 +51,7 @@ export function ArticleCard({ article, index }: ArticleCardProps) {
           </Link>
         </CardTitle>
       </CardContent>
-      <CardFooter className="flex justify-between items-center p-3 sm:p-4 pt-0">
+      <CardFooter className="flex justify-between items-center p-2 sm:p-4 pt-0">
         <div className={cn(
           "text-sm truncate",
           bgColor ? "text-card-foreground/80" : "text-muted-foreground"

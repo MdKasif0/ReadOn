@@ -22,7 +22,7 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
   return (
     <div className="relative">
         <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2 px-4 pb-4">
+            <div className="flex w-max space-x-2 px-4 pb-3">
             {categories.map((category) => {
                 const categorySlug = category.href.split("=")[1];
                 const isActive = currentCategorySlug === categorySlug;
