@@ -10,13 +10,13 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const ArticleAnalysisInputSchema = z.object({
+const ArticleAnalysisInputSchema = z.object({
   title: z.string().describe('The title of the news article.'),
   description: z.string().describe('The description or summary of the news article.'),
 });
 export type ArticleAnalysisInput = z.infer<typeof ArticleAnalysisInputSchema>;
 
-export const ArticleAnalysisOutputSchema = z.object({
+const ArticleAnalysisOutputSchema = z.object({
   relatedTopics: z.array(z.string()).describe('A list of 2-4 short, relevant topic tags for the article.'),
 });
 export type ArticleAnalysisOutput = z.infer<typeof ArticleAnalysisOutputSchema>;

@@ -10,14 +10,14 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const ArticleFollowUpInputSchema = z.object({
+const ArticleFollowUpInputSchema = z.object({
   title: z.string().describe('The title of the news article.'),
   description: z.string().describe('The description or summary of the news article.'),
   question: z.string().describe('The user\'s follow-up question.'),
 });
 export type ArticleFollowUpInput = z.infer<typeof ArticleFollowUpInputSchema>;
 
-export const ArticleFollowUpOutputSchema = z.object({
+const ArticleFollowUpOutputSchema = z.object({
   answer: z.string().describe('A concise answer to the user\'s question based on the article context.'),
 });
 export type ArticleFollowUpOutput = z.infer<typeof ArticleFollowUpOutputSchema>;
