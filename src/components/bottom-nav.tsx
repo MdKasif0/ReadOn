@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full flex justify-center pb-4 pointer-events-none md:hidden">
-      <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-full bg-card p-2 shadow-lg pointer-events-auto">
+      <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-2xl bg-background/80 p-2 shadow-lg backdrop-blur-sm pointer-events-auto">
         {navItems.map((item) => {
           const isActive =
             (item.href === "/" && pathname === "/") ||
@@ -32,7 +32,7 @@ export function BottomNav() {
                   : "text-muted-foreground/80 hover:text-foreground"
               )}
             >
-              <item.icon className="mb-1 h-5 w-5" />
+              <item.icon className={cn("mb-1 h-5 w-5", isActive && "fill-current")} />
               <span className="text-xs">{item.label}</span>
             </Link>
           );
