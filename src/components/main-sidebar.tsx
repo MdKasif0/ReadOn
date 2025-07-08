@@ -12,28 +12,8 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/logo";
-import {
-  Bookmark,
-  BookOpen,
-  Globe,
-  HeartPulse,
-  Landmark,
-  Lightbulb,
-  Rocket,
-  Palette,
-  Atom,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-
-const categories = [
-  { name: "General", icon: Globe, href: "/?category=general" },
-  { name: "Business", icon: Landmark, href: "/?category=business" },
-  { name: "Technology", icon: Rocket, href: "/?category=technology" },
-  { name: "Entertainment", icon: Palette, href: "/?category=entertainment" },
-  { name: "Sports", icon: Atom, href: "/?category=sports" },
-  { name: "Science", icon: Lightbulb, href: "/?category=science" },
-  { name: "Health", icon: HeartPulse, href: "/?category=health" },
-];
+import { Bookmark } from "lucide-react";
+import { newsCategories } from "@/lib/categories";
 
 export function MainSidebar() {
   const pathname = usePathname();
@@ -49,14 +29,14 @@ export function MainSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {categories.map((item) => (
+          {newsCategories.map((item) => (
             <SidebarMenuItem key={item.name}>
-              <Link href={item.href}>
+              <Link href={`/?category=${item.slug}`}>
                 <SidebarMenuButton
                   isActive={
                     !pathname.startsWith("/bookmarks") &&
-                    (currentCategory === item.name.toLowerCase() ||
-                    (!currentCategory && item.name === "General"))
+                    (currentCategory === item.slug ||
+                      (!currentCategory && item.slug === "general"))
                   }
                   tooltip={item.name}
                 >

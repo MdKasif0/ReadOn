@@ -9,16 +9,13 @@ import { ArticleSkeleton } from "@/components/article-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 import { MobileHeader } from "@/components/mobile-header";
-import { CategoryTabs, type Category } from "@/components/category-tabs";
+import { CategoryTabs } from "@/components/category-tabs";
+import { newsCategories } from "@/lib/categories";
 
-const categories: Category[] = [
-  { name: "For You", href: "/?category=general" },
-  { name: "Top Stories", href: "/?category=business" },
-  { name: "Tech & Science", href: "/?category=technology" },
-  { name: "Entertainment", href: "/?category=entertainment" },
-  { name: "Sports", href: "/?category=sports" },
-  { name: "Health", href: "/?category=health" },
-];
+const categoriesForTabs = newsCategories.map((category) => ({
+  name: category.name,
+  href: `/?category=${category.slug}`,
+}));
 
 function NewsFeed() {
   const searchParams = useSearchParams();
@@ -39,15 +36,18 @@ function NewsFeed() {
       if (query) {
         searchKeywords = query;
         setPageTitle(`Search results for "${query}"`);
-      } else if (category) {
-        const categoryName =
-          categories.find((c) => c.href.includes(`=${category}`))?.name ||
-          category;
-        searchKeywords = `top news in ${category}`;
-        setPageTitle(categoryName);
       } else {
-        searchKeywords = "latest world news";
-        setPageTitle("For You");
+        const currentCategorySlug = category || "general";
+        const categoryDetails = newsCategories.find(
+          (c) => c.slug === currentCategorySlug
+        );
+
+        if (currentCategorySlug === "general") {
+          searchKeywords = "latest world news";
+        } else {
+          searchKeywords = `top news in ${categoryDetails?.name}`;
+        }
+        setPageTitle(categoryDetails?.name || "For You");
       }
 
       try {
@@ -68,7 +68,7 @@ function NewsFeed() {
     <div>
       <div className="md:hidden">
         <MobileHeader title="Discover" />
-        <CategoryTabs categories={categories} />
+        <CategoryTabs categories={categoriesForTabs} />
       </div>
       <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="mb-6 hidden text-3xl font-bold tracking-tight text-primary md:block">

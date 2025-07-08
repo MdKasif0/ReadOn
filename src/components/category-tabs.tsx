@@ -41,7 +41,7 @@ export function CategoryTabs({ categories }: CategoryTabsProps) {
                 );
             })}
             </div>
-            <ScrollBar orientation="horizontal" className="invisible" />
+            <ScrollBar orientation="horizontal" />
         </ScrollArea>
     </div>
   );
