@@ -22,7 +22,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { analyzeArticle } from '@/ai/flows/article-analyzer';
 import { followUpOnArticle } from '@/ai/flows/article-follow-up';
+import { expandArticle } from '@/ai/flows/article-expander';
 import { formatDistanceToNow } from 'date-fns';
+import { Skeleton } from './ui/skeleton';
 
 export function ArticleDetailClient() {
   const searchParams = useSearchParams();
@@ -30,6 +32,8 @@ export function ArticleDetailClient() {
   const [article, setArticle] = useState<Article | null>(null);
   const [analysis, setAnalysis] = useState<any | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
+  const [expandedContent, setExpandedContent] = useState('');
+  const [isLoadingExpandedContent, setIsLoadingExpandedContent] = useState(true);
   const [followUpQuery, setFollowUpQuery] = useState('');
   const [followUpHistory, setFollowUpHistory] = useState<{ question: string; answer: string }[]>([]);
   const [isAsking, setIsAsking] = useState(false);
@@ -52,6 +56,12 @@ export function ArticleDetailClient() {
           .then(setAnalysis)
           .catch(console.error)
           .finally(() => setIsLoadingAnalysis(false));
+
+        expandArticle(analysisInput)
+          .then(result => setExpandedContent(result.expandedContent))
+          .catch(console.error)
+          .finally(() => setIsLoadingExpandedContent(false));
+
       } catch (error) {
         console.error("Failed to parse article data", error);
         router.push('/'); // Redirect if data is invalid
@@ -138,7 +148,19 @@ export function ArticleDetailClient() {
 
         <div className="p-4">
           <h1 className="text-3xl font-bold">{article.title}</h1>
-          <p className="mt-4 text-lg text-foreground/80">{article.description}</p>
+          
+          {isLoadingExpandedContent ? (
+              <div className="mt-4 space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-full mt-4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+              </div>
+          ) : (
+            <p className="mt-4 text-lg text-foreground/80 whitespace-pre-wrap">{expandedContent || article.description}</p>
+          )}
           
           <div className="mt-6 flex flex-wrap items-center justify-between gap-y-2 text-xs text-foreground/60">
             <div className="flex items-center gap-2">
