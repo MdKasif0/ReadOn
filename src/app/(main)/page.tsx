@@ -23,104 +23,49 @@ function NewsFeed() {
   const category = searchParams.get("category");
   const query = searchParams.get("q");
 
-  const { country, language } = useSettings();
+  const { language } = useSettings();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageTitle, setPageTitle] = useState("For You");
 
-  const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutes
-
-  const fetchArticles = useCallback(async (forceRefresh = false) => {
+  const fetchArticles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
-    const isSearch = !!query;
-    const cacheKey = isSearch
-      ? `readon-search-cache-${query}-${language}`
-      : `readon-category-cache-${category || "general"}-${country}-${language}`;
-
-    if (!forceRefresh) {
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { timestamp, articles: cachedArticles } = JSON.parse(cached);
-          if (Date.now() - timestamp < REFRESH_INTERVAL) {
-            setArticles(cachedArticles);
-            if (isSearch) {
-              setPageTitle(`Search results for "${query}"`);
-            } else {
-              const categoryDetails = newsCategories.find((c) => c.slug === (category || 'general'));
-              setPageTitle(categoryDetails?.name || "For You");
-            }
-            setIsLoading(false);
-            return;
-          }
-        }
-      } catch (e) {
-        console.error("Failed to read from cache", e);
-        localStorage.removeItem(cacheKey);
-      }
-    }
-
     try {
       let result;
+      const isSearch = !!query;
+
       if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
+        // For search, we pass the query and language preference.
         result = await articleSearch({ query, language });
       } else {
         const currentCategorySlug = category || 'general';
         const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
-        result = await articleSearch({ category: currentCategorySlug, country, language });
+        // For categories, we fetch from the shared Firestore cache.
+        // Country/language preferences do not apply to this cached data.
+        result = await articleSearch({ category: currentCategorySlug });
       }
 
       setArticles(result.results);
-
-      if (result.results.length > 0) {
-        try {
-          const cacheData = {
-            timestamp: Date.now(),
-            articles: result.results,
-          };
-          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-        } catch (e) {
-          console.error("Failed to write to cache", e);
-        }
+      if (result.results.length === 0 && !isSearch) {
+        setError("No articles found. The cache might be empty. Try running the update script.");
       }
+
     } catch (err) {
       console.error("Failed to fetch articles:", err);
-      // Fallback to cache on error
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { articles: cachedArticles } = JSON.parse(cached);
-          setArticles(cachedArticles);
-          setError("Could not fetch latest news. Showing older results.");
-        } else {
-          setError("Failed to fetch news articles. Please try again later.");
-        }
-      } catch (cacheError) {
-        console.error("Cache fallback failed:", cacheError);
-        setError("Failed to fetch news articles. Please try again later.");
-      }
+      setError("Failed to fetch news articles. Please try again later.");
     } finally {
       setIsLoading(false);
     }
-  }, [category, query, country, language]);
+  }, [category, query, language]);
 
   useEffect(() => {
     fetchArticles();
-    
-    // Auto-refresh for category feeds, not searches
-    if (!query) {
-      const intervalId = setInterval(() => {
-        fetchArticles(true);
-      }, REFRESH_INTERVAL);
-
-      return () => clearInterval(intervalId);
-    }
-  }, [fetchArticles, query]);
+  }, [fetchArticles]);
 
   return (
     <div>
