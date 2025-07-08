@@ -37,6 +37,12 @@ body {
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 0 0% 89.8%;
     --sidebar-ring: 178 32% 34%;
+
+    --chart-1: 220 70% 96%;
+    --chart-2: 30 100% 96%;
+    --chart-3: 150 70% 96%;
+    --chart-4: 340 100% 97%;
+    --chart-5: 60 100% 96%;
   }
   .dark {
     --background: 220 15% 10%;
@@ -67,6 +73,12 @@ body {
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 220 15% 25%;
     --sidebar-ring: 178 60% 50%;
+    
+    --chart-1: 220 30% 20%;
+    --chart-2: 30 40% 20%;
+    --chart-3: 150 30% 20%;
+    --chart-4: 340 30% 22%;
+    --chart-5: 60 30% 20%;
   }
 }
 

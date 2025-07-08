@@ -3,14 +3,29 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookmarkButton } from "@/components/bookmark-button";
 import type { Article } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 interface ArticleCardProps {
   article: Article;
+  index?: number;
 }
 
-export function ArticleCard({ article }: ArticleCardProps) {
+const bgColors = [
+  "bg-chart-1",
+  "bg-chart-2",
+  "bg-chart-3",
+  "bg-chart-4",
+  "bg-chart-5",
+];
+
+export function ArticleCard({ article, index }: ArticleCardProps) {
+  const bgColor = index !== undefined ? bgColors[index % bgColors.length] : undefined;
+  
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <Card className={cn(
+      "flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
+      bgColor
+    )}>
       <CardHeader className="p-0">
         <Link href={article.url} target="_blank" rel="noopener noreferrer" className="block aspect-video w-full relative overflow-hidden">
             <Image
@@ -36,7 +51,10 @@ export function ArticleCard({ article }: ArticleCardProps) {
         </CardTitle>
       </CardContent>
       <CardFooter className="flex justify-between items-center p-4 pt-0">
-        <div className="text-sm text-muted-foreground truncate">
+        <div className={cn(
+          "text-sm truncate",
+          bgColor ? "text-card-foreground/80" : "text-muted-foreground"
+        )}>
             <Link href={article.source.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">{article.source.name}</Link>
         </div>
         <BookmarkButton article={article} />
