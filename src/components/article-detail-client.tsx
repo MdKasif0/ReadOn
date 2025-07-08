@@ -20,19 +20,21 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { analyzeArticle, type ArticleAnalysisInput, type ArticleAnalysisOutput } from '@/ai/flows/article-analyzer';
-import { followUpOnArticle, type ArticleFollowUpInput, type ArticleFollowUpOutput } from '@/ai/flows/article-follow-up';
+import { analyzeArticle } from '@/ai/flows/article-analyzer';
+import { followUpOnArticle } from '@/ai/flows/article-follow-up';
 import { formatDistanceToNow } from 'date-fns';
 
 export function ArticleDetailClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [article, setArticle] = useState<Article | null>(null);
-  const [analysis, setAnalysis] = useState<ArticleAnalysisOutput | null>(null);
+  const [analysis, setAnalysis] = useState<any | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
   const [followUpQuery, setFollowUpQuery] = useState('');
   const [followUpHistory, setFollowUpHistory] = useState<{ question: string; answer: string }[]>([]);
   const [isAsking, setIsAsking] = useState(false);
+  const [views, setViews] = useState(0);
+  const [comments, setComments] = useState(0);
 
   useEffect(() => {
     const articleData = searchParams.get('data');
@@ -41,7 +43,7 @@ export function ArticleDetailClient() {
         const decodedArticle = JSON.parse(decodeURIComponent(articleData));
         setArticle(decodedArticle);
 
-        const analysisInput: ArticleAnalysisInput = {
+        const analysisInput = {
           title: decodedArticle.title,
           description: decodedArticle.description,
         };
@@ -59,6 +61,14 @@ export function ArticleDetailClient() {
     }
   }, [searchParams, router]);
   
+  useEffect(() => {
+    // Set random view/comment counts only on the client-side after mount
+    if (article) {
+        setViews(Math.floor(Math.random() * 2000));
+        setComments(Math.floor(Math.random() * 100));
+    }
+  }, [article]);
+
   const handleFollowUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!followUpQuery.trim() || !article) return;
@@ -68,7 +78,7 @@ export function ArticleDetailClient() {
     setFollowUpQuery('');
 
     try {
-      const input: ArticleFollowUpInput = {
+      const input = {
           title: article.title,
           description: article.description,
           question: question,
@@ -112,8 +122,15 @@ export function ArticleDetailClient() {
       </header>
 
       <main className="pb-24">
-        <div className="relative w-full h-[60vh]">
-          <Image src={article.imageUrl} alt={article.title} layout="fill" objectFit="cover" />
+        <div className="relative w-full">
+          <Image
+            src={article.imageUrl}
+            alt={article.title}
+            width={0}
+            height={0}
+            sizes="100vw"
+            style={{ width: '100%', height: 'auto' }}
+          />
           <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
             Image from Unsplash
           </div>
@@ -133,8 +150,8 @@ export function ArticleDetailClient() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1"><Clock className="h-3 w-3" /> {formatDistanceToNow(new Date(article.publishedAt))} ago</div>
-              <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {Math.floor(Math.random() * 2000)}</div>
-              <div className="flex items-center gap-1"><MessageCircle className="h-3 w-3" /> {Math.floor(Math.random() * 100)}</div>
+              <div className="flex items-center gap-1"><Eye className="h-3 w-3" /> {views}</div>
+              <div className="flex items-center gap-1"><MessageCircle className="h-3 w-3" /> {comments}</div>
             </div>
           </div>
           
@@ -143,7 +160,7 @@ export function ArticleDetailClient() {
                   <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
               ) : analysis && (
                   <div className="flex flex-wrap gap-2">
-                      {analysis.relatedTopics.map(topic => (
+                      {analysis.relatedTopics.map((topic: string) => (
                           <Button key={topic} variant="secondary" size="sm" className="rounded-full h-auto py-1.5">{topic}</Button>
                       ))}
                   </div>
