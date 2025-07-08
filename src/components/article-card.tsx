@@ -13,20 +13,21 @@ interface ArticleCardProps {
 export function ArticleCard({ article }: ArticleCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden rounded-2xl border-none bg-transparent shadow-lg">
-      <div className="relative w-full aspect-[9/16]">
+      <div className="w-full">
         <Link href={article.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
             <Image
               src={article.imageUrl}
               alt={article.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-full h-auto"
               data-ai-hint="space ice"
             />
         </Link>
       </div>
       <div className="flex flex-col flex-grow p-4 bg-accent text-accent-foreground">
-        <h2 className="text-2xl font-bold leading-tight line-clamp-3">
+        <h2 className="text-2xl font-bold leading-tight">
           <Link
             href={article.url}
             target="_blank"
@@ -36,7 +37,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             {article.title}
           </Link>
         </h2>
-        <p className="mt-2 text-sm text-accent-foreground/80 line-clamp-3 flex-grow min-h-[3rem]">
+        <p className="mt-2 text-sm text-accent-foreground/80 flex-grow">
           {article.description}
         </p>
         <div className="mt-4 flex justify-between items-center">
