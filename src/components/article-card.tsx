@@ -26,7 +26,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
         </Link>
       </div>
       <div className="flex flex-col flex-grow p-4 bg-accent text-accent-foreground">
-        <h2 className="text-xl font-bold leading-tight line-clamp-2">
+        <h2 className="text-xl font-bold leading-tight line-clamp-4">
           <Link
             href={article.url}
             target="_blank"
@@ -36,7 +36,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             {article.title}
           </Link>
         </h2>
-        <p className="mt-2 text-sm text-accent-foreground/80 flex-grow line-clamp-3">
+        <p className="mt-2 text-sm text-accent-foreground/80 flex-grow line-clamp-6">
           {article.description}
         </p>
         <div className="mt-4 flex justify-between items-center">
