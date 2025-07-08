@@ -30,16 +30,17 @@ function NewsFeed() {
 
     const isSearch = !!query;
     const currentCategorySlug = category || 'general';
+    let hasCache = false;
 
-    // For category pages, first try to load from IndexedDB for offline support
+    // For category pages, first try to load from IndexedDB for an instant UI update
     if (!isSearch) {
       const cachedArticles = await getArticlesByCategory(currentCategorySlug);
       if (cachedArticles && cachedArticles.length > 0) {
         const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
         setArticles(cachedArticles);
-        setIsLoading(false);
-        return; // Exit if we have fresh cached data
+        setIsLoading(false); // Stop the main loading spinner, show cached content
+        hasCache = true;
       }
     }
     
@@ -48,29 +49,39 @@ function NewsFeed() {
 
       if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
+        // Searches always hit the network and are not cached this way
         result = await articleSearch({ query, language, country });
       } else {
+        // Category fetches also hit the network to get latest data
         const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
         result = await articleSearch({ category: currentCategorySlug, language, country });
       }
 
+      // We have new data, update the UI
       setArticles(result.results);
       
-      // If we got results and it wasn't a search, cache them in IndexedDB
+      // If it was a category fetch and we got results, update the cache
       if (!isSearch && result.results.length > 0) {
         await saveArticles(currentCategorySlug, result.results);
       }
 
-      if (result.results.length === 0) {
+      if (result.results.length === 0 && !hasCache) {
         setError("We couldn't find any articles. Please try again later or select a different category.");
       }
 
     } catch (err) {
       console.error("Failed to fetch articles:", err);
-      setError("Failed to fetch news articles. Please try again later.");
+      // Only show a prominent error if we have no cached data to display
+      if (!hasCache) {
+        setError("Failed to fetch news articles. Please try again later.");
+      }
     } finally {
-      setIsLoading(false);
+      // Only set loading to false here if we didn't have a cache.
+      // If we had a cache, it was already set to false.
+      if (!hasCache) {
+        setIsLoading(false);
+      }
     }
   }, [category, query, language, country]);
 
