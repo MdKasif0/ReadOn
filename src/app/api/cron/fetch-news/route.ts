@@ -5,11 +5,10 @@ import { newsCategories } from '@/lib/categories';
 import type { Article } from '@/lib/types';
 
 /**
- * This is the API route that will be called by a cron job.
+ * This is the API route for the scheduled job configured in apphosting.yaml.
  * It fetches news for all categories and stores them in Firestore.
  * To stay within the GNews free tier (100 requests/day), this endpoint
- * should be called at a lower frequency, e.g., every 2-3 hours, as
- * each run makes one API request per category.
+ * is scheduled to run every 2 hours, as each run makes one API request per category.
  */
 export async function GET() {
   const apiKey = process.env.GNEWS_API_KEY;
