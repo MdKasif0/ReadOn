@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 z-50 w-full flex justify-center pb-4 pointer-events-none md:hidden">
-      <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-2xl bg-background/80 p-2 shadow-lg backdrop-blur-sm pointer-events-auto">
+      <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-3xl bg-black/50 p-2 shadow-lg backdrop-blur-md pointer-events-auto">
         {navItems.map((item) => {
           const isActive =
             (item.href === "/" && pathname === "/") ||
@@ -28,8 +28,8 @@ export function BottomNav() {
               className={cn(
                 "group inline-flex flex-col items-center justify-center py-2 px-4 font-medium transition-colors duration-200",
                 isActive
-                  ? "text-accent"
-                  : "text-muted-foreground/80 hover:text-foreground"
+                  ? "text-white"
+                  : "text-muted-foreground/80 hover:text-white"
               )}
             >
               <item.icon className={cn("mb-1 h-5 w-5", isActive && "fill-current")} />
