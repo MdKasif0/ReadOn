@@ -13,6 +13,8 @@ import { z } from 'zod';
 const ArticleSearchInputSchema = z.object({
   query: z.string().optional().describe('The keywords to search for in news articles.'),
   category: z.string().optional().describe('The category for top headlines.'),
+  country: z.string().optional().describe('The country for top headlines (ISO 3166-1 alpha-2 code).'),
+  language: z.string().optional().describe('The language for top headlines (ISO 639-1 code).'),
 });
 export type ArticleSearchInput = z.infer<typeof ArticleSearchInputSchema>;
 
@@ -50,12 +52,15 @@ export async function articleSearch(
 
   let url: string;
   if (input.query) {
+    const language = input.language || 'en';
     url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
       input.query
-    )}&lang=en&max=9&apikey=${apiKey}`;
+    )}&lang=${language}&max=9&apikey=${apiKey}`;
   } else {
     const category = input.category || 'general';
-    url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=us&max=9&apikey=${apiKey}`;
+    const country = input.country || 'us';
+    const language = input.language || 'en';
+    url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=${language}&country=${country}&max=9&apikey=${apiKey}`;
   }
 
   try {

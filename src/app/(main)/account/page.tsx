@@ -12,12 +12,24 @@ import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { useSettings } from "@/providers/settings-provider";
+import { supportedCountries } from "@/lib/countries";
+import { supportedLanguages } from "@/lib/languages";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function AccountPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { country, setCountry, language, setLanguage } = useSettings();
+
   useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
@@ -91,6 +103,40 @@ export default function AccountPage() {
                                     setTheme(checked ? 'dark' : 'light')
                                 }}
                             />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Content Preferences</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="country-select">Country</Label>
+                            <Select value={country} onValueChange={setCountry}>
+                                <SelectTrigger id="country-select" className="w-[180px]">
+                                    <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {supportedCountries.map((c) => (
+                                        <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="language-select">Language</Label>
+                            <Select value={language} onValueChange={setLanguage}>
+                                <SelectTrigger id="language-select" className="w-[180px]">
+                                    <SelectValue placeholder="Select language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {supportedLanguages.map((l) => (
+                                        <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </CardContent>
                 </Card>

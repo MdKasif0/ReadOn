@@ -4,6 +4,7 @@ import { AuthProvider } from "@/providers/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { BookmarksProvider } from "@/providers/bookmarks-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { SettingsProvider } from "@/providers/settings-provider";
 
 export const metadata: Metadata = {
   title: "ReadOn",
@@ -37,10 +38,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <BookmarksProvider>
-              {children}
-              <Toaster />
-            </BookmarksProvider>
+            <SettingsProvider>
+              <BookmarksProvider>
+                {children}
+                <Toaster />
+              </BookmarksProvider>
+            </SettingsProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
