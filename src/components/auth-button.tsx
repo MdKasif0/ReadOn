@@ -21,6 +21,7 @@ export function AuthButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
+    if (!auth) return;
     await auth.signOut();
     router.push("/");
   };
@@ -28,7 +29,7 @@ export function AuthButton() {
   if (!user) {
     return (
       <Link href="/login">
-        <Button variant="outline">Login</Button>
+        <Button variant="outline" disabled={!auth}>Login</Button>
       </Link>
     );
   }

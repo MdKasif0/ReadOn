@@ -1,6 +1,6 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,20 +11,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Instead of throwing an error, we'll check for the config and conditionally initialize.
-// This allows the app to run in a limited mode if Firebase is not configured.
-const hasFirebaseConfig = !!(
-    firebaseConfig.apiKey &&
-    firebaseConfig.authDomain &&
-    firebaseConfig.projectId
-);
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 
-const app = hasFirebaseConfig && !getApps().length ? initializeApp(firebaseConfig) : (hasFirebaseConfig ? getApp() : null);
-const auth = hasFirebaseConfig ? getAuth(app!) : null;
-const db = hasFirebaseConfig ? getFirestore(app!) : null;
-
-if (!hasFirebaseConfig) {
-  console.warn("Firebase configuration is missing or incomplete. The app will run in a limited mode where features like authentication and database access are disabled. Please provide the necessary NEXT_PUBLIC_FIREBASE_* environment variables.");
+// Initialize Firebase only if the configuration is valid.
+// This prevents the app from crashing if environment variables are not set.
+if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+  try {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (e) {
+    console.error("Firebase initialization failed:", e);
+  }
+} else {
+  console.warn("Firebase configuration is missing or incomplete. Authentication and database features will be disabled.");
 }
 
 

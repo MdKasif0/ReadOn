@@ -33,6 +33,7 @@ export default function AccountPage() {
   useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
+    if (!auth) return;
     await auth.signOut();
     router.push("/");
   };
@@ -79,7 +80,7 @@ export default function AccountPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Button onClick={handleLogout} className="w-full" variant="outline">
+                        <Button onClick={handleLogout} className="w-full" variant="outline" disabled={!auth}>
                             <LogOut className="mr-2 h-4 w-4" />
                             Log Out
                         </Button>

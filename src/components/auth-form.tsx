@@ -31,7 +31,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Loader2, AlertTriangle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
@@ -43,6 +42,27 @@ const formSchema = z.object({
 type AuthFormProps = {
   mode: "login" | "signup";
 };
+
+function AuthDisabledCard() {
+    return (
+        <Card className="w-full max-w-sm">
+            <CardHeader>
+                <CardTitle>Service Unavailable</CardTitle>
+                <CardDescription>
+                Authentication is currently disabled because the application is not configured with Firebase credentials.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-destructive/50 bg-destructive/10 p-12 text-center text-destructive">
+                    <AlertTriangle className="mb-4 h-12 w-12" />
+                    <p className="font-semibold">
+                        Please check the environment variables and restart the server.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
@@ -57,16 +77,11 @@ export function AuthForm({ mode }: AuthFormProps) {
     },
   });
 
+  if (!auth) {
+    return <AuthDisabledCard />;
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // This should not be reachable if auth is null due to disabled form, but as a safeguard:
-    if (!auth) {
-        toast({
-            variant: "destructive",
-            title: "Authentication service not available",
-            description: "Firebase is not configured on this server.",
-        });
-        return;
-    }
     setIsLoading(true);
     try {
       if (mode === "signup") {
@@ -92,31 +107,6 @@ export function AuthForm({ mode }: AuthFormProps) {
     } finally {
         setIsLoading(false);
     }
-  }
-
-  // If Firebase is not configured, authentication is not possible.
-  if (!auth) {
-    return (
-        <Card className="w-full max-w-sm">
-             <CardHeader>
-                <CardTitle>{mode === "login" ? "Login" : "Sign Up"}</CardTitle>
-                <CardDescription>
-                {mode === "login"
-                    ? "Enter your credentials to access your account."
-                    : "Create an account to save your favorite articles."}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Service Unavailable</AlertTitle>
-                    <AlertDescription>
-                        Authentication is currently disabled because the application is not configured with Firebase credentials.
-                    </AlertDescription>
-                </Alert>
-            </CardContent>
-        </Card>
-    );
   }
 
   return (
