@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -12,19 +13,16 @@ interface ArticleCardProps {
   index: number;
 }
 
-const cardColors = [
-  "bg-card-bg-1",
-  "bg-card-bg-2",
-  "bg-card-bg-3",
-  "bg-card-bg-4",
-];
+const cardColorSuffixes = ["1", "2", "3", "4"];
 
 export function ArticleCard({ article, index }: ArticleCardProps) {
   const articleData = encodeURIComponent(JSON.stringify(article));
-  const colorClass = cardColors[index % cardColors.length];
+  const colorSuffix = cardColorSuffixes[index % cardColorSuffixes.length];
+  const bgColorClass = `bg-card-bg-${colorSuffix}`;
+  const borderColorClass = `border-card-bg-${colorSuffix}`;
 
   return (
-    <Card className="flex flex-col overflow-hidden rounded-2xl shadow-lg border-2 border-accent bg-transparent">
+    <Card className={cn("flex flex-col overflow-hidden rounded-2xl shadow-lg border-2 bg-transparent", borderColorClass)}>
       <Link href={`/article?data=${articleData}`}>
         <div className="overflow-hidden">
           <Image
@@ -39,7 +37,7 @@ export function ArticleCard({ article, index }: ArticleCardProps) {
           />
         </div>
       </Link>
-      <div className={cn("flex flex-col flex-grow p-4 text-accent-foreground", colorClass)}>
+      <div className={cn("flex flex-col flex-grow p-4 text-accent-foreground", bgColorClass)}>
         <h2 className="text-xl font-bold leading-tight line-clamp-3">
           <Link href={`/article?data=${articleData}`} className="hover:underline">
             {article.title}
