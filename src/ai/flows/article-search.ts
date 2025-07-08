@@ -91,6 +91,13 @@ export async function articleSearch(
     // For top headlines by category, we fetch from our Firestore cache.
     // The country and language settings do not apply here, as we use a shared cache
     // populated by the backend script.
+
+    // If there is no db instance, we can't fetch from Firestore.
+    if (!db) {
+      console.warn("Firestore is not initialized. Cannot fetch cached articles.");
+      return { results: [] };
+    }
+
     try {
       const category = input.category || 'general';
       const docRef = doc(db, 'news', category);

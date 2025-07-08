@@ -12,6 +12,13 @@ import type { Article } from '@/lib/types';
  * This can be configured in `netlify.toml` for Netlify deployments.
  */
 export async function GET() {
+  if (!db) {
+    return NextResponse.json(
+        { success: false, error: 'Firestore is not initialized. Check Firebase config.' },
+        { status: 500 }
+    );
+  }
+
   const apiKey = process.env.GNEWS_API_KEY;
   if (!apiKey) {
     return NextResponse.json(

@@ -11,16 +11,21 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check that all necessary firebase config values are set.
-// If the variables are missing, we throw an error to stop the app from running
-// in a broken state. This gives the developer a clear, actionable message.
-if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
-  throw new Error("Firebase configuration is missing. Please make sure you have a .env.local file with all the required NEXT_PUBLIC_FIREBASE_* variables, or that they are set in your deployment environment.");
+// Instead of throwing an error, we'll check for the config and conditionally initialize.
+// This allows the app to run in a limited mode if Firebase is not configured.
+const hasFirebaseConfig = !!(
+    firebaseConfig.apiKey &&
+    firebaseConfig.authDomain &&
+    firebaseConfig.projectId
+);
+
+const app = hasFirebaseConfig && !getApps().length ? initializeApp(firebaseConfig) : (hasFirebaseConfig ? getApp() : null);
+const auth = hasFirebaseConfig ? getAuth(app!) : null;
+const db = hasFirebaseConfig ? getFirestore(app!) : null;
+
+if (!hasFirebaseConfig) {
+  console.warn("Firebase configuration is missing or incomplete. The app will run in a limited mode where features like authentication and database access are disabled. Please provide the necessary NEXT_PUBLIC_FIREBASE_* environment variables.");
 }
 
-
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 export { app, auth, db };
