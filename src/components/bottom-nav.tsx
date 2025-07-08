@@ -6,7 +6,7 @@ import { Newspaper, Bookmark, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "News", icon: Newspaper },
+  { href: "/feed", label: "News", icon: Newspaper },
   { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
   { href: "/account", label: "Settings", icon: Settings },
 ];
@@ -19,8 +19,8 @@ export function BottomNav() {
       <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-3xl bg-black/50 p-2 shadow-lg backdrop-blur-md pointer-events-auto">
         {navItems.map((item) => {
           const isActive =
-            (item.href === "/" && pathname === "/") ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+            (item.href === "/feed" && (pathname === "/feed" || pathname === "/")) ||
+            (item.href !== "/feed" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}

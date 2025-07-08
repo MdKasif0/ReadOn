@@ -12,6 +12,13 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  
+  // Conditionally render the app shell.
+  // The landing page at `/` will not have the sidebar, header, etc.
+  if (pathname === '/') {
+    return <>{children}</>;
+  }
+  
   const showBottomNav = pathname !== '/article';
 
   return (

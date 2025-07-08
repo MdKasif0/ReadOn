@@ -54,10 +54,10 @@ export function ArticleDetailClient() {
 
       } catch (error) {
         console.error("Failed to parse article data", error);
-        router.push('/'); // Redirect if data is invalid
+        router.push('/feed'); // Redirect if data is invalid
       }
     } else {
-        router.push('/'); // Redirect if no data
+        router.push('/feed'); // Redirect if no data
     }
   }, [searchParams, router]);
   

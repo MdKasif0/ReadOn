@@ -78,7 +78,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       } else {
         await signInWithEmailAndPassword(auth, values.email, values.password);
       }
-      router.push("/");
+      router.push("/feed");
       toast({
         title: `Welcome!`,
         description: `You have successfully ${mode === 'login' ? 'logged in' : 'signed up'}.`,

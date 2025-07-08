@@ -23,7 +23,7 @@ export function MainSidebar() {
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader>
-        <Link href="/">
+        <Link href="/feed">
           <Logo />
         </Link>
       </SidebarHeader>
@@ -31,10 +31,11 @@ export function MainSidebar() {
         <SidebarMenu>
           {newsCategories.map((item) => (
             <SidebarMenuItem key={item.name}>
-              <Link href={`/?category=${item.slug}`}>
+              <Link href={`/feed?category=${item.slug}`}>
                 <SidebarMenuButton
                   isActive={
-                    !pathname.startsWith("/bookmarks") &&
+                    pathname === '/feed' &&
+                    !searchParams.get('q') &&
                     (currentCategory === item.slug ||
                       (!currentCategory && item.slug === "general"))
                   }

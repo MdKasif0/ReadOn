@@ -24,12 +24,12 @@ export function SearchForm({ onSearch }: { onSearch?: () => void }) {
   useEffect(() => {
     const trimmedQuery = debouncedQuery.trim();
     if (trimmedQuery && trimmedQuery !== (searchParams.get("q") || "")) {
-      router.push(`/?q=${encodeURIComponent(trimmedQuery)}`);
+      router.push(`/feed?q=${encodeURIComponent(trimmedQuery)}`);
       if (onSearch) {
         onSearch();
       }
     } else if (!trimmedQuery && searchParams.get("q")) {
-      router.push(`/`);
+      router.push(`/feed`);
       if (onSearch) {
         onSearch();
       }
@@ -38,7 +38,7 @@ export function SearchForm({ onSearch }: { onSearch?: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/feed?q=${encodeURIComponent(query.trim())}`);
     if (onSearch) {
       onSearch();
     }
