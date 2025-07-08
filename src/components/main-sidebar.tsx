@@ -43,7 +43,7 @@ export function MainSidebar() {
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader>
-        <Link href="/" aria-label="Back to home">
+        <Link href="/">
           <Logo />
         </Link>
       </SidebarHeader>
