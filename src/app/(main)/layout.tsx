@@ -1,7 +1,9 @@
-
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "@/providers/auth-provider";
+import { Loader2 } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { MainSidebar } from "@/components/main-sidebar";
 import { PageHeader } from "@/components/page-header";
@@ -14,6 +16,22 @@ export default function MainLayout({
 }) {
   const pathname = usePathname();
   const showBottomNav = pathname !== '/article';
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
