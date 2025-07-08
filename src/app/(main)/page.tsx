@@ -9,14 +9,8 @@ import { ArticleSkeleton } from "@/components/article-skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 import { MobileHeader } from "@/components/mobile-header";
-import { CategoryTabs } from "@/components/category-tabs";
 import { newsCategories } from "@/lib/categories";
 import { useSettings } from "@/providers/settings-provider";
-
-const categoriesForTabs = newsCategories.map((category) => ({
-  name: category.name,
-  href: `/?category=${category.slug}`,
-}));
 
 function NewsFeed() {
   const searchParams = useSearchParams();
@@ -68,7 +62,6 @@ function NewsFeed() {
     <div>
       <div className="md:hidden">
         <MobileHeader title="Discover" />
-        <CategoryTabs categories={categoriesForTabs} />
       </div>
       <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="mb-6 hidden text-3xl font-bold tracking-tight text-primary md:block">
