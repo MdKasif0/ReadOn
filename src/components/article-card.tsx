@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { BookmarkButton } from "@/components/bookmark-button";
 import type { Article } from "@/lib/types";
 import { Button } from "./ui/button";
-import { Headphones } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ArticleCardProps {
@@ -52,9 +51,6 @@ export function ArticleCard({ article, index }: ArticleCardProps) {
             </div>
             <div className="flex items-center">
                 <BookmarkButton article={article} />
-                <Button variant="ghost" size="icon" className="rounded-full text-accent-foreground hover:bg-black/10 active:bg-black/20">
-                    <Headphones className="h-5 w-5" />
-                </Button>
             </div>
         </div>
       </div>

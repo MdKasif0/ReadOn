@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { BookmarkButton } from '@/components/bookmark-button';
 import {
   X,
-  Headphones,
   Share2,
   MoreVertical,
   Paperclip,
@@ -104,15 +103,12 @@ export function ArticleDetailClient() {
 
   return (
     <div className="relative min-h-screen bg-card text-card-foreground">
-      <header className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-2 md:p-4 bg-gradient-to-b from-black/60 to-transparent">
+      <header className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-2 md:p-4 bg-gradient-to-b from-black/60 to-transparent">
         <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60" onClick={() => router.back()}>
           <X />
         </Button>
         <div className="flex items-center space-x-1 md:space-x-2">
           <BookmarkButton article={article} className="bg-black/40 text-white rounded-full hover:bg-black/60 hover:text-white" />
-          <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60">
-            <Headphones />
-          </Button>
           <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60">
             <Share2 />
           </Button>

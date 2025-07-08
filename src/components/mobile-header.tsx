@@ -1,6 +1,6 @@
 "use client";
 
-import { Headphones, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import Link from "next/link";
 
@@ -13,9 +13,6 @@ export function MobileHeader({ title }: MobileHeaderProps) {
     <div className="flex items-center justify-between p-4 pt-6 md:hidden">
       <h1 className="text-2xl font-bold tracking-tight text-primary">{title}</h1>
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="icon" className="rounded-full">
-            <Headphones className="h-6 w-6 text-muted-foreground" />
-        </Button>
         <Link href="/bookmarks" passHref>
           <Button variant="ghost" size="icon" className="rounded-full">
               <Heart className="h-6 w-6 text-muted-foreground" />
