@@ -13,7 +13,7 @@ const searchSchema = z.object({
   query: z.string().min(1, "Search query cannot be empty"),
 });
 
-export function SearchForm() {
+export function SearchForm({ onSearch }: { onSearch?: () => void }) {
   const router = useRouter();
   const form = useForm<z.infer<typeof searchSchema>>({
     resolver: zodResolver(searchSchema),
@@ -22,6 +22,9 @@ export function SearchForm() {
 
   function onSubmit(values: z.infer<typeof searchSchema>) {
     router.push(`/?q=${encodeURIComponent(values.query)}`);
+    if (onSearch) {
+      onSearch();
+    }
   }
 
   return (
