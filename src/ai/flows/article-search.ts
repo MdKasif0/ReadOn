@@ -43,77 +43,111 @@ const ArticleSearchOutputSchema = z.object({
 });
 export type ArticleSearchOutput = z.infer<typeof ArticleSearchOutputSchema>;
 
+// Helper function to fetch from GNews API to avoid code repetition.
+async function fetchFromGNews(params: {
+  query?: string;
+  category?: string;
+  language?: string;
+  country?: string;
+}) {
+  const apiKey = process.env.GNEWS_API_KEY;
+  if (!apiKey) {
+    console.error('GNEWS_API_KEY is not set. Returning empty results.');
+    return [];
+  }
+
+  const lang = params.language || 'en';
+  const country = params.country || 'us';
+  const max = 10;
+  let url = `https://gnews.io/api/v4/`;
+
+  if (params.query) {
+    url += `search?q=${encodeURIComponent(
+      params.query
+    )}&lang=${lang}&country=${country}&max=${max}&apikey=${apiKey}`;
+  } else if (params.category) {
+    url += `top-headlines?category=${params.category}&lang=${lang}&country=${country}&max=${max}&apikey=${apiKey}`;
+  } else {
+    return [];
+  }
+
+  try {
+    // Use a short revalidation time for live fetches to keep content fresh but avoid excessive API calls on re-renders.
+    const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache API response for 1 hour
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('GNews API Error:', errorData);
+      return [];
+    }
+    const data = await response.json();
+
+    const articles = data.articles
+      .map((article: any) => ({
+        title: article.title,
+        description: article.description || 'No description available.',
+        url: article.url,
+        imageUrl: article.image || 'https://placehold.co/600x400.png',
+        publishedAt: article.publishedAt,
+        source: {
+          name: article.source.name,
+          url: article.source.url,
+        },
+      }))
+      .filter((article: any) => article.title !== '[Removed]');
+
+    return articles;
+  } catch (error) {
+    console.error('Failed to fetch articles from GNews:', error);
+    return [];
+  }
+}
+
 export async function articleSearch(
   input: ArticleSearchInput
 ): Promise<ArticleSearchOutput> {
-  // For search queries, we hit the GNews API in real-time.
+  // For search queries, always hit the GNews API in real-time.
   if (input.query) {
-    const apiKey = process.env.GNEWS_API_KEY;
-    if (!apiKey) {
-      console.error('GNEWS_API_KEY is not set. Returning empty results.');
-      return { results: [] };
-    }
-    const language = input.language || 'en';
-    const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
-      input.query
-    )}&lang=${language}&max=10&apikey=${apiKey}`;
-    
-    try {
-      const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('GNews API Error:', errorData);
-        // Don't throw, just return empty so the app doesn't crash
-        return { results: [] };
-      }
-      const data = await response.json();
-  
-      const articles = data.articles
-        .map((article: any) => ({
-          title: article.title,
-          description: article.description || 'No description available.',
-          url: article.url,
-          imageUrl: article.image || 'https://placehold.co/600x400.png',
-          publishedAt: article.publishedAt,
-          source: {
-            name: article.source.name,
-            url: article.source.url,
-          },
-        }))
-        .filter((article: any) => article.title !== '[Removed]');
-  
-      return { results: articles };
-    } catch (error) {
-      console.error('Failed to fetch articles from GNews:', error);
-      return { results: [] };
-    }
-  } else {
-    // For top headlines by category, we fetch from our Firestore cache.
-    // The country and language settings do not apply here, as we use a shared cache
-    // populated by the backend script.
+    const articles = await fetchFromGNews({
+      query: input.query,
+      language: input.language,
+      country: input.country,
+    });
+    return { results: articles };
+  }
 
-    // If there is no db instance, we can't fetch from Firestore.
-    if (!db) {
-      console.warn("Firestore is not initialized. Cannot fetch cached articles.");
-      return { results: [] };
-    }
-
+  // For category headlines, first try the Firestore cache.
+  if (db) {
     try {
       const category = input.category || 'general';
       const docRef = doc(db, 'news', category);
       const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
+      if (docSnap.exists() && docSnap.data().articles?.length > 0) {
+        console.log(`Serving articles for '${category}' from cache.`);
         const data = docSnap.data();
-        const articles = data.articles || [];
-        return { results: articles };
-      } else {
-        console.warn(`No cached articles found for category: ${category}. You may need to run the cron job at /api/cron/fetch-news.`);
-        return { results: [] };
+        return { results: data.articles || [] };
       }
     } catch (error) {
-      console.error('Failed to fetch articles from Firestore:', error);
-      return { results: [] };
+      console.error(
+        'Failed to fetch from Firestore, falling back to API:',
+        error
+      );
     }
+  } else {
+    console.warn('Firestore is not initialized. Falling back to live API.');
   }
+
+  // Fallback: If cache is empty, doesn't exist, or Firestore fails, fetch live from GNews.
+  // This ensures the app shows content on first load before the cron job runs.
+  console.log(
+    `Cache empty or unavailable for '${
+      input.category || 'general'
+    }'. Fetching live from GNews.`
+  );
+  const articles = await fetchFromGNews({
+    category: input.category || 'general',
+    language: input.language,
+    country: input.country,
+  });
+  return { results: articles };
 }

@@ -23,7 +23,7 @@ function NewsFeed() {
   const category = searchParams.get("category");
   const query = searchParams.get("q");
 
-  const { language } = useSettings();
+  const { language, country } = useSettings();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,20 +39,17 @@ function NewsFeed() {
 
       if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
-        // For search, we pass the query and language preference.
-        result = await articleSearch({ query, language });
+        result = await articleSearch({ query, language, country });
       } else {
         const currentCategorySlug = category || 'general';
         const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
-        // For categories, we fetch from the shared Firestore cache.
-        // Country/language preferences do not apply to this cached data.
-        result = await articleSearch({ category: currentCategorySlug });
+        result = await articleSearch({ category: currentCategorySlug, language, country });
       }
 
       setArticles(result.results);
-      if (result.results.length === 0 && !isSearch) {
-        setError("No articles found. The cache might be empty. Try running the update script.");
+      if (result.results.length === 0) {
+        setError("We couldn't find any articles. Please try again later or select a different category.");
       }
 
     } catch (err) {
@@ -61,7 +58,7 @@ function NewsFeed() {
     } finally {
       setIsLoading(false);
     }
-  }, [category, query, language]);
+  }, [category, query, language, country]);
 
   useEffect(() => {
     fetchArticles();
@@ -91,7 +88,7 @@ function NewsFeed() {
             ))}
           </ArticleGrid>
         ) : (
-          <ArticleGrid articles={articles} />
+          !error && <ArticleGrid articles={articles} />
         )}
       </div>
     </div>
