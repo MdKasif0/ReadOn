@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { BookmarksProvider } from "@/providers/bookmarks-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "ReadOn",
@@ -29,12 +30,19 @@ export default function RootLayout({
         ></link>
       </head>
       <body className="font-body antialiased">
-        <AuthProvider>
-          <BookmarksProvider>
-            {children}
-            <Toaster />
-          </BookmarksProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <BookmarksProvider>
+              {children}
+              <Toaster />
+            </BookmarksProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
