@@ -14,7 +14,7 @@ const BookmarksContext = createContext<BookmarksContextType | undefined>(
   undefined
 );
 
-const BOOKMARKS_STORAGE_KEY = "getnews-bookmarks";
+const BOOKMARKS_STORAGE_KEY = "readon-bookmarks";
 
 export function BookmarksProvider({ children }: { children: React.ReactNode }) {
   const [bookmarks, setBookmarks] = useState<Article[]>([]);

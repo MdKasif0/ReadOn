@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { BookmarksProvider } from "@/providers/bookmarks-provider";
 
 export const metadata: Metadata = {
-  title: "GetNews",
+  title: "ReadOn",
   description: "Your daily source of news, powered by AI.",
 };
 
