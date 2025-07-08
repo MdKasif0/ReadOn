@@ -58,8 +58,8 @@ export function BookmarkButton({ article }: BookmarkButtonProps) {
             variant="ghost"
             size="icon"
             onClick={handleBookmarkClick}
-            className={cn("rounded-full text-muted-foreground transition-colors hover:text-primary",
-              bookmarked && "text-primary bg-primary/10"
+            className={cn("rounded-full text-accent-foreground/80 transition-colors hover:text-accent-foreground hover:bg-black/10 active:bg-black/20",
+              bookmarked && "text-accent-foreground bg-black/10"
             )}
           >
             <Bookmark className={cn("h-5 w-5 transition-transform", bookmarked && "fill-current scale-110")} />

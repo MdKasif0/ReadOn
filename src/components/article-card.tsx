@@ -1,65 +1,56 @@
-
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { BookmarkButton } from "@/components/bookmark-button";
 import type { Article } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
+import { Headphones } from "lucide-react";
 
 interface ArticleCardProps {
   article: Article;
-  index?: number;
 }
 
-const bgColors = [
-  "bg-chart-1",
-  "bg-chart-2",
-  "bg-chart-3",
-  "bg-chart-4",
-  "bg-chart-5",
-];
-
-export function ArticleCard({ article, index }: ArticleCardProps) {
-  const bgColor = index !== undefined ? bgColors[index % bgColors.length] : undefined;
-  
+export function ArticleCard({ article }: ArticleCardProps) {
   return (
-    <Card className={cn(
-      "flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
-      bgColor
-    )}>
-      <CardHeader className="p-0">
-        <Link href={article.url} target="_blank" rel="noopener noreferrer" className="block aspect-video w-full relative overflow-hidden">
+    <Card className="flex flex-col overflow-hidden rounded-2xl border-none bg-transparent shadow-lg">
+      <div className="relative w-full aspect-square">
+        <Link href={article.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
             <Image
               src={article.imageUrl}
               alt={article.title}
               fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              data-ai-hint="news article"
+              data-ai-hint="space ice"
             />
         </Link>
-      </CardHeader>
-      <CardContent className="flex-grow p-2 sm:p-4">
-        <CardTitle className="text-lg leading-snug">
+      </div>
+      <div className="flex flex-col flex-grow p-4 bg-accent text-accent-foreground">
+        <h2 className="text-2xl font-bold leading-tight line-clamp-3">
           <Link
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary transition-colors"
+            className="hover:underline"
           >
             {article.title}
           </Link>
-        </CardTitle>
-      </CardContent>
-      <CardFooter className="flex justify-between items-center p-2 sm:p-4 pt-0">
-        <div className={cn(
-          "text-sm truncate",
-          bgColor ? "text-card-foreground/80" : "text-muted-foreground"
-        )}>
-            <Link href={article.source.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">{article.source.name}</Link>
+        </h2>
+        <p className="mt-2 text-sm text-accent-foreground/80 line-clamp-3 flex-grow min-h-[3rem]">
+          {article.description}
+        </p>
+        <div className="mt-4 flex justify-between items-center">
+            <div className="text-xs truncate font-medium">
+                <Link href={article.source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">{article.source.name}</Link>
+            </div>
+            <div className="flex items-center">
+                <BookmarkButton article={article} />
+                <Button variant="ghost" size="icon" className="rounded-full text-accent-foreground hover:bg-black/10 active:bg-black/20">
+                    <Headphones className="h-5 w-5" />
+                </Button>
+            </div>
         </div>
-        <BookmarkButton article={article} />
-      </CardFooter>
+      </div>
     </Card>
   );
 }
