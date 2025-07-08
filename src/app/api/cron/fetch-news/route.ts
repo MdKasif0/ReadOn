@@ -48,6 +48,7 @@ export async function GET() {
         .map((article: any) => ({
           title: article.title,
           description: article.description || 'No description available.',
+          content: article.content || article.description || 'No content available.',
           url: article.url,
           imageUrl: article.image || 'https://placehold.co/600x400.png',
           publishedAt: article.publishedAt,

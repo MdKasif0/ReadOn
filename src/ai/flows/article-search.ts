@@ -26,6 +26,7 @@ const ArticleSearchOutputSchema = z.object({
       z.object({
         title: z.string().describe('The title of the article.'),
         description: z.string().describe('A brief summary of the article.'),
+        content: z.string().describe('The content of the article.'),
         url: z.string().url().describe('The URL of the article.'),
         imageUrl: z.string().url().describe('The URL of the article image.'),
         publishedAt: z
@@ -85,6 +86,7 @@ async function fetchFromGNews(params: {
       .map((article: any) => ({
         title: article.title,
         description: article.description || 'No description available.',
+        content: article.content || article.description || 'No content available.',
         url: article.url,
         imageUrl: article.image || 'https://placehold.co/600x400.png',
         publishedAt: article.publishedAt,
