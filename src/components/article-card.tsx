@@ -24,7 +24,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             height={0}
             sizes="100vw"
             style={{ width: '100%', height: 'auto' }}
-            className="aspect-[9/16] object-cover"
+            className=""
             data-ai-hint="space ice"
           />
         </div>
