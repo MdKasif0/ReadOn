@@ -11,6 +11,7 @@ import { Terminal } from "lucide-react";
 import { MobileHeader } from "@/components/mobile-header";
 import { newsCategories } from "@/lib/categories";
 import { useSettings } from "@/providers/settings-provider";
+import { getArticlesByCategory, saveArticles } from "@/lib/indexed-db";
 
 function NewsFeed() {
   const searchParams = useSearchParams();
@@ -26,22 +27,41 @@ function NewsFeed() {
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+
+    const isSearch = !!query;
+    const currentCategorySlug = category || 'general';
+
+    // For category pages, first try to load from IndexedDB for offline support
+    if (!isSearch) {
+      const cachedArticles = await getArticlesByCategory(currentCategorySlug);
+      if (cachedArticles && cachedArticles.length > 0) {
+        const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
+        setPageTitle(categoryDetails?.name || "For You");
+        setArticles(cachedArticles);
+        setIsLoading(false);
+        return; // Exit if we have fresh cached data
+      }
+    }
     
     try {
       let result;
-      const isSearch = !!query;
 
       if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
         result = await articleSearch({ query, language, country });
       } else {
-        const currentCategorySlug = category || 'general';
         const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
         setPageTitle(categoryDetails?.name || "For You");
         result = await articleSearch({ category: currentCategorySlug, language, country });
       }
 
       setArticles(result.results);
+      
+      // If we got results and it wasn't a search, cache them in IndexedDB
+      if (!isSearch && result.results.length > 0) {
+        await saveArticles(currentCategorySlug, result.results);
+      }
+
       if (result.results.length === 0) {
         setError("We couldn't find any articles. Please try again later or select a different category.");
       }
