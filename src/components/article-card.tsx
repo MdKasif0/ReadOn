@@ -13,7 +13,7 @@ interface ArticleCardProps {
 export function ArticleCard({ article }: ArticleCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden rounded-2xl border-none bg-transparent shadow-lg">
-      <div className="relative w-full aspect-video">
+      <div className="relative w-full aspect-[9/16]">
         <Link href={article.url} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
             <Image
               src={article.imageUrl}
