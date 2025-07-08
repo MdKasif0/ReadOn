@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Leaf, Heart, Settings } from "lucide-react";
+import { Newspaper, Bookmark, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "News", icon: Leaf },
-  { href: "/bookmarks", label: "Bookmarks", icon: Heart },
+  { href: "/", label: "News", icon: Newspaper },
+  { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
   { href: "/account", label: "Settings", icon: Settings },
 ];
 
