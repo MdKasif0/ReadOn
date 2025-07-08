@@ -86,7 +86,7 @@ async function fetchFromGNews(params: {
       .map((article: any) => ({
         title: article.title,
         description: article.description || 'No description available.',
-        content: article.content || '',
+        content: (article.content || '').replace(/\s*\[\+\d+\s*characters\]\s*$/, '').trim(),
         url: article.url,
         imageUrl: article.image || 'https://placehold.co/600x400.png',
         publishedAt: article.publishedAt,
