@@ -1,6 +1,5 @@
-import type { Config } from "@netlify/functions";
-
 // This is the scheduled function that Netlify will run.
+// The schedule is configured in netlify.toml
 export default async () => {
   // Netlify provides the production URL in an environment variable.
   // We fall back to a local URL for testing.
@@ -21,12 +20,4 @@ export default async () => {
   } catch (error) {
     console.error("Error executing cron job:", error);
   }
-};
-
-// Netlify-specific configuration for the function.
-export const config: Config = {
-  // The name of the function, which matches the file name.
-  name: "fetch-news-cron",
-  // A friendly name for the function in the Netlify UI.
-  friendly_name: "Fetch News Cron Job",
 };

@@ -14,5 +14,6 @@
 # Scheduled function to fetch news every 2 hours.
 # The cron schedule "0 */2 * * *" means "at minute 0 of every 2nd hour".
 # This helps stay within the GNews API free tier limits.
-[[functions."fetch-news-cron"]]
+[[functions]]
+  name = "fetch-news-cron"
   schedule = "0 */2 * * *"
