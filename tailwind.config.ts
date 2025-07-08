@@ -33,6 +33,12 @@ export default {
           '2': 'hsl(var(--card-bg-2))',
           '3': 'hsl(var(--card-bg-3))',
           '4': 'hsl(var(--card-bg-4))',
+          '5': 'hsl(var(--card-bg-5))',
+          '6': 'hsl(var(--card-bg-6))',
+          '7': 'hsl(var(--card-bg-7))',
+          '8': 'hsl(var(--card-bg-8))',
+          '9': 'hsl(var(--card-bg-9))',
+          '10': 'hsl(var(--card-bg-10))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',

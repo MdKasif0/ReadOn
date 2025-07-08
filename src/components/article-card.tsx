@@ -12,7 +12,7 @@ interface ArticleCardProps {
   index: number;
 }
 
-const cardColorSuffixes = ["1", "2", "3", "4"];
+const cardColorSuffixes = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
 export function ArticleCard({ article, index }: ArticleCardProps) {
   const articleData = encodeURIComponent(JSON.stringify(article));
