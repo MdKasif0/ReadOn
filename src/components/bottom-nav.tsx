@@ -2,21 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Bookmark, User } from "lucide-react";
+import { Leaf, Heart, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Discover", icon: Compass },
-  { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
-  { href: "/account", label: "Account", icon: User },
+  { href: "/", label: "News", icon: Leaf },
+  { href: "/bookmarks", label: "Bookmarks", icon: Heart },
+  { href: "/account", label: "Settings", icon: Settings },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 z-50 h-16 w-full border-t border-border/50 bg-background md:hidden">
-      <div className="mx-auto grid h-full max-w-lg grid-cols-3 font-medium">
+    <div className="fixed bottom-0 left-0 z-50 w-full flex justify-center pb-4 pointer-events-none md:hidden">
+      <div className="grid h-full w-full max-w-xs grid-cols-3 rounded-full bg-card p-2 shadow-lg pointer-events-auto">
         {navItems.map((item) => {
           const isActive =
             (item.href === "/" && pathname === "/") ||
@@ -26,11 +26,13 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group inline-flex flex-col items-center justify-center px-5 hover:bg-muted/50",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "group inline-flex flex-col items-center justify-center py-2 px-4 font-medium transition-colors duration-200",
+                isActive
+                  ? "text-accent"
+                  : "text-muted-foreground/80 hover:text-foreground"
               )}
             >
-              <item.icon className="mb-1 h-6 w-6" />
+              <item.icon className="mb-1 h-5 w-5" />
               <span className="text-xs">{item.label}</span>
             </Link>
           );
