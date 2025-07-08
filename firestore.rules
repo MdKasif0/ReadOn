@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow public read access to the cached news articles.
+    // Deny all client-side writes. The server-side cron job will use
+    // admin credentials which bypass these rules, allowing it to update the cache.
+    match /news/{category} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // By default, deny read/write to all other documents.
+    // This is a good security practice to prevent accidental access.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
