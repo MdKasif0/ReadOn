@@ -32,26 +32,20 @@ function NewsFeed() {
       setIsLoading(true);
       setError(null);
 
-      let searchKeywords: string;
-      if (query) {
-        searchKeywords = query;
-        setPageTitle(`Search results for "${query}"`);
-      } else {
-        const currentCategorySlug = category || "general";
-        const categoryDetails = newsCategories.find(
-          (c) => c.slug === currentCategorySlug
-        );
-
-        if (currentCategorySlug === "general") {
-          searchKeywords = "latest world news";
-        } else {
-          searchKeywords = `top news in ${categoryDetails?.name}`;
-        }
-        setPageTitle(categoryDetails?.name || "For You");
-      }
-
       try {
-        const result = await articleSearch({ keywords: searchKeywords });
+        let result;
+        if (query) {
+          setPageTitle(`Search results for "${query}"`);
+          result = await articleSearch({ query });
+        } else {
+          const currentCategorySlug = category || "general";
+          const categoryDetails = newsCategories.find(
+            (c) => c.slug === currentCategorySlug
+          );
+
+          setPageTitle(categoryDetails?.name || "For You");
+          result = await articleSearch({ category: currentCategorySlug });
+        }
         setArticles(result.results);
       } catch (err) {
         console.error(err);

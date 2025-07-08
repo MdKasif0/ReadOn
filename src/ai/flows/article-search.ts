@@ -11,7 +11,8 @@
 import { z } from 'zod';
 
 const ArticleSearchInputSchema = z.object({
-  keywords: z.string().describe('The keywords to search for in news articles.'),
+  query: z.string().optional().describe('The keywords to search for in news articles.'),
+  category: z.string().optional().describe('The category for top headlines.'),
 });
 export type ArticleSearchInput = z.infer<typeof ArticleSearchInputSchema>;
 
@@ -47,31 +48,39 @@ export async function articleSearch(
     return { results: [] };
   }
 
-  const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
-    input.keywords
-  )}&lang=en&max=9&apikey=${apiKey}`;
+  let url: string;
+  if (input.query) {
+    url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(
+      input.query
+    )}&lang=en&max=9&apikey=${apiKey}`;
+  } else {
+    const category = input.category || 'general';
+    url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=us&max=9&apikey=${apiKey}`;
+  }
 
   try {
     const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
     if (!response.ok) {
       const errorData = await response.json();
       console.error('GNews API Error:', errorData);
-       // Don't throw, just return empty so the app doesn't crash
+      // Don't throw, just return empty so the app doesn't crash
       return { results: [] };
     }
     const data = await response.json();
 
-    const articles = data.articles.map((article: any) => ({
-      title: article.title,
-      description: article.description || 'No description available.',
-      url: article.url,
-      imageUrl: article.image || 'https://placehold.co/600x400.png',
-      publishedAt: article.publishedAt,
-      source: {
-        name: article.source.name,
-        url: article.source.url,
-      },
-    })).filter((article: any) => article.title !== '[Removed]');
+    const articles = data.articles
+      .map((article: any) => ({
+        title: article.title,
+        description: article.description || 'No description available.',
+        url: article.url,
+        imageUrl: article.image || 'https://placehold.co/600x400.png',
+        publishedAt: article.publishedAt,
+        source: {
+          name: article.source.name,
+          url: article.source.url,
+        },
+      }))
+      .filter((article: any) => article.title !== '[Removed]');
 
     return { results: articles };
   } catch (error) {
