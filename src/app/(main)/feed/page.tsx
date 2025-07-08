@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useState, useEffect, Suspense, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { articleSearch } from "@/ai/flows/article-search";
-import type { Article } from "@/lib/types";
-import { ArticleGrid } from "@/components/article-grid";
-import { ArticleSkeleton } from "@/components/article-skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
-import { MobileHeader } from "@/components/mobile-header";
-import { newsCategories } from "@/lib/categories";
-import { useSettings } from "@/providers/settings-provider";
-import { getArticlesByCategory, saveArticles } from "@/lib/indexed-db";
+import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { articleSearch } from '@/ai/flows/article-search';
+import type { Article } from '@/lib/types';
+import { ArticleGrid } from '@/components/article-grid';
+import { ArticleSkeleton } from '@/components/article-skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
+import { MobileHeader } from '@/components/mobile-header';
+import { newsCategories } from '@/lib/categories';
+import { useSettings } from '@/providers/settings-provider';
+import { getArticlesByCategory, saveArticles } from '@/lib/indexed-db';
 
 function NewsFeed() {
   const searchParams = useSearchParams();
-  const category = searchParams.get("category");
-  const query = searchParams.get("q");
+  const category = searchParams.get('category');
+  const query = searchParams.get('q');
 
   const { language, country } = useSettings();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pageTitle, setPageTitle] = useState("For You");
+  const [pageTitle, setPageTitle] = useState('For You');
 
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
@@ -36,49 +36,60 @@ function NewsFeed() {
     if (!isSearch) {
       const cachedArticles = await getArticlesByCategory(currentCategorySlug);
       if (cachedArticles && cachedArticles.length > 0) {
-        const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
-        setPageTitle(categoryDetails?.name || "For You");
+        const categoryDetails = newsCategories.find(
+          (c) => c.slug === currentCategorySlug
+        );
+        setPageTitle(categoryDetails?.name || 'For You');
         setArticles(cachedArticles);
         setIsLoading(false); // Stop the main loading spinner, show cached content
         hasCache = true;
       }
     }
-    
-    try {
-      let result;
 
+    try {
       if (isSearch) {
         setPageTitle(`Search results for "${query}"`);
-        // Searches always hit the network and are not cached this way
-        result = await articleSearch({ query, language, country });
+        const result = await articleSearch({ query, language, country });
+        // For search, always overwrite previous results.
+        setArticles(result.results);
+        if (result.results.length === 0) {
+          setError(
+            'No articles found for your search. Please try a different query.'
+          );
+        }
       } else {
-        // Category fetches also hit the network to get latest data
-        const categoryDetails = newsCategories.find((c) => c.slug === currentCategorySlug);
-        setPageTitle(categoryDetails?.name || "For You");
-        result = await articleSearch({ category: currentCategorySlug, language, country });
-      }
+        // Category fetches also hit the network to get the latest data.
+        const categoryDetails = newsCategories.find(
+          (c) => c.slug === currentCategorySlug
+        );
+        setPageTitle(categoryDetails?.name || 'For You');
+        const result = await articleSearch({
+          category: currentCategorySlug,
+          language,
+          country,
+        });
 
-      // We have new data, update the UI
-      setArticles(result.results);
-      
-      // If it was a category fetch and we got results, update the cache
-      if (!isSearch && result.results.length > 0) {
-        await saveArticles(currentCategorySlug, result.results);
+        // Only update UI and cache if new articles were actually found.
+        // This prevents the "flash" of cached content disappearing if the network call fails or returns empty.
+        if (result.results.length > 0) {
+          setArticles(result.results);
+          await saveArticles(currentCategorySlug, result.results);
+        } else if (!hasCache) {
+          // If network returns nothing AND we had no cache, then it's an empty state.
+          setError(
+            "We couldn't find any articles for this category. Please try again later."
+          );
+        }
       }
-
-      if (result.results.length === 0 && !hasCache) {
-        setError("We couldn't find any articles. Please try again later or select a different category.");
-      }
-
     } catch (err) {
-      console.error("Failed to fetch articles:", err);
+      console.error('Failed to fetch articles:', err);
       // Only show a prominent error if we have no cached data to display
       if (!hasCache) {
-        setError("Failed to fetch news articles. Please try again later.");
+        setError('Failed to fetch news articles. Please try again later.');
       }
     } finally {
-      // Only set loading to false here if we didn't have a cache.
-      // If we had a cache, it was already set to false.
+      // If we start with a cache, isLoading is set to false early.
+      // If there's no cache, we need to set it to false here after the network call.
       if (!hasCache) {
         setIsLoading(false);
       }
