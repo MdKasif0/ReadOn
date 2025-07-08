@@ -7,13 +7,11 @@
   publish = ".next"
 
 # Configuration for Netlify Functions
-[functions]
-  # Directory where scheduled functions are stored.
-  directory = "netlify/functions"
-
-# Scheduled function to fetch news every 2 hours.
+# The `fetch-news-cron` function is a scheduled function.
 # The cron schedule "0 */2 * * *" means "at minute 0 of every 2nd hour".
 # This helps stay within the GNews API free tier limits.
-[[functions]]
-  name = "fetch-news-cron"
+[functions]
+  directory = "netlify/functions"
+
+[functions.fetch-news-cron]
   schedule = "0 */2 * * *"
