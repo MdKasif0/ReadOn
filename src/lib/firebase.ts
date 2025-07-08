@@ -1,16 +1,13 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
-// IMPORTANT: Replace the placeholder values below with your own Firebase project configuration.
-// You can find this configuration in your Firebase project settings.
-// It's recommended to use environment variables to store this sensitive information.
 const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-  projectId: "YOUR_FIREBASE_PROJECT_ID",
-  storageBucket: "YOUR_FIREBASE_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "YOUR_FIREBASE_APP_ID",
+  apiKey: "AIzaSyAQKQbRtvvPsuNlCHE0LVGWDyjJfq7hK90",
+  authDomain: "bytechat-ffb7c.firebaseapp.com",
+  projectId: "bytechat-ffb7c",
+  storageBucket: "bytechat-ffb7c.appspot.com",
+  messagingSenderId: "681650489425",
+  appId: "1:681650489425:web:665f37d73fe8c8ca201070",
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
