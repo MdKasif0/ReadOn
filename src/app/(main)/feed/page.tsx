@@ -15,86 +15,90 @@ import { getArticlesByCategory, saveArticles } from '@/lib/indexed-db';
 
 function NewsFeed() {
   const searchParams = useSearchParams();
-  const category = searchParams.get('category');
-  const query = searchParams.get('q');
+  const { language: defaultLanguage, country: defaultCountry } = useSettings();
 
-  const { language, country } = useSettings();
+  // Extract all possible filter params from URL
+  const query = searchParams.get('q');
+  const singleCategory = searchParams.get('category');
+  const multiCategories = searchParams.get('categories');
+  const country = searchParams.get('country');
+  const language = searchParams.get('language');
+  const from = searchParams.get('from');
+  const to = searchParams.get('to');
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageTitle, setPageTitle] = useState('For You');
-
+  
   const fetchArticles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
-    const isSearch = !!query;
-    const currentCategorySlug = category || 'general';
-    let hasCache = false;
+    const categoriesArray = multiCategories ? multiCategories.split(',') : [];
+    const isAdvancedSearch = !!query || categoriesArray.length > 0 || !!from;
 
-    // For category pages, first try to load from IndexedDB for an instant UI update
-    if (!isSearch) {
-      const cachedArticles = await getArticlesByCategory(currentCategorySlug);
+    // Set page title based on filters
+    if (query) {
+      setPageTitle(`Search results for "${query}"`);
+    } else if (categoriesArray.length > 0) {
+      const categoryNames = newsCategories
+        .filter(c => categoriesArray.includes(c.slug))
+        .map(c => c.name)
+        .join(' & ');
+      setPageTitle(categoryNames || 'Filtered News');
+    } else if (singleCategory) {
+      const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
+      setPageTitle(categoryDetails?.name || 'For You');
+    } else {
+      setPageTitle('For You');
+    }
+
+    // For simple category pages, try to load from IndexedDB first for an instant UI update
+    const cacheCategory = singleCategory || 'general';
+    let hasCache = false;
+    if (!isAdvancedSearch) {
+      const cachedArticles = await getArticlesByCategory(cacheCategory);
       if (cachedArticles && cachedArticles.length > 0) {
-        const categoryDetails = newsCategories.find(
-          (c) => c.slug === currentCategorySlug
-        );
-        setPageTitle(categoryDetails?.name || 'For You');
         setArticles(cachedArticles);
-        setIsLoading(false); // Stop the main loading spinner, show cached content
+        setIsLoading(false); // Stop main loader, show cached content
         hasCache = true;
       }
     }
-
+    
     try {
-      if (isSearch) {
-        setPageTitle(`Search results for "${query}"`);
-        const result = await articleSearch({ query, language, country });
-        // For search, always overwrite previous results.
-        setArticles(result.results);
-        if (result.results.length === 0) {
-          setError(
-            'No articles found for your search. Please try a different query.'
-          );
-        }
-      } else {
-        // Category fetches also hit the network to get the latest data.
-        const categoryDetails = newsCategories.find(
-          (c) => c.slug === currentCategorySlug
-        );
-        setPageTitle(categoryDetails?.name || 'For You');
-        const result = await articleSearch({
-          category: currentCategorySlug,
-          language,
-          country,
-        });
+        const searchInput = {
+            query: query || undefined,
+            category: isAdvancedSearch ? undefined : (singleCategory || 'general'),
+            categories: categoriesArray.length > 0 ? categoriesArray : undefined,
+            language: language || defaultLanguage,
+            country: country || defaultCountry,
+            from: from || undefined,
+            to: to || undefined,
+        };
+      
+        const result = await articleSearch(searchInput);
 
-        // Only update UI and cache if new articles were actually found.
-        // This prevents the "flash" of cached content disappearing if the network call fails or returns empty.
         if (result.results.length > 0) {
-          setArticles(result.results);
-          await saveArticles(currentCategorySlug, result.results);
+            setArticles(result.results);
+            // Only cache results for simple, single-category views
+            if (!isAdvancedSearch) {
+              await saveArticles(cacheCategory, result.results);
+            }
         } else if (!hasCache) {
-          // If network returns nothing AND we had no cache, then it's an empty state.
-          setError(
-            "We couldn't find any articles for this category. Please try again later."
-          );
+            setError("We couldn't find any articles for your criteria. Please try again with different filters.");
         }
-      }
     } catch (err) {
       console.error('Failed to fetch articles:', err);
-      // Only show a prominent error if we have no cached data to display
       if (!hasCache) {
         setError('Failed to fetch news articles. Please try again later.');
       }
     } finally {
-      // If we start with a cache, isLoading is set to false early.
-      // If there's no cache, we need to set it to false here after the network call.
       if (!hasCache) {
         setIsLoading(false);
       }
     }
-  }, [category, query, language, country]);
+  }, [searchParams, defaultCountry, defaultLanguage]);
 
   useEffect(() => {
     fetchArticles();

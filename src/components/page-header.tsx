@@ -1,6 +1,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AuthButton } from "@/components/auth-button";
 import { SearchForm } from "@/components/search-form";
+import { FilterSheet } from "./filter-sheet";
 
 export function PageHeader() {
   return (
@@ -11,7 +12,10 @@ export function PageHeader() {
       <div className="flex-1">
         <SearchForm />
       </div>
-      <AuthButton />
+      <div className="flex items-center gap-2">
+        <FilterSheet />
+        <AuthButton />
+      </div>
     </header>
   );
 }
