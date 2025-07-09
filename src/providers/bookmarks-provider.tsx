@@ -1,13 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import type { Article } from "@/lib/types";
+import type { Article, Bookmark } from "@/lib/types";
 
 interface BookmarksContextType {
-  bookmarks: Article[];
+  bookmarks: Bookmark[];
   addBookmark: (article: Article) => void;
   removeBookmark: (articleUrl: string) => void;
+  updateBookmark: (articleUrl: string, data: { notes?: string; tags?: string[] }) => void;
   isBookmarked: (articleUrl: string) => boolean;
+  getBookmark: (articleUrl: string) => Bookmark | undefined;
 }
 
 const BookmarksContext = createContext<BookmarksContextType | undefined>(
@@ -17,14 +19,26 @@ const BookmarksContext = createContext<BookmarksContextType | undefined>(
 const BOOKMARKS_STORAGE_KEY = "readon-bookmarks";
 
 export function BookmarksProvider({ children }: { children: React.ReactNode }) {
-  const [bookmarks, setBookmarks] = useState<Article[]>([]);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      const storedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
-      if (storedBookmarks) {
-        setBookmarks(JSON.parse(storedBookmarks));
+      const storedData = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        // Migration logic for old data format
+        if (parsedData.length > 0 && parsedData[0].article === undefined) {
+          const migratedBookmarks: Bookmark[] = parsedData.map((article: Article) => ({
+            article,
+            notes: '',
+            tags: [],
+            addedAt: Date.now(),
+          }));
+          setBookmarks(migratedBookmarks);
+        } else {
+          setBookmarks(parsedData);
+        }
       }
     } catch (error) {
       console.error("Failed to load bookmarks from localStorage", error);
@@ -44,22 +58,40 @@ export function BookmarksProvider({ children }: { children: React.ReactNode }) {
 
   const addBookmark = (article: Article) => {
     setBookmarks((prev) => {
-      if (prev.some((b) => b.url === article.url)) {
+      if (prev.some((b) => b.article.url === article.url)) {
         return prev;
       }
-      return [...prev, article];
+      const newBookmark: Bookmark = {
+        article,
+        notes: "",
+        tags: [],
+        addedAt: Date.now(),
+      };
+      return [newBookmark, ...prev].sort((a, b) => b.addedAt - a.addedAt);
     });
   };
 
   const removeBookmark = (articleUrl: string) => {
-    setBookmarks((prev) => prev.filter((b) => b.url !== articleUrl));
+    setBookmarks((prev) => prev.filter((b) => b.article.url !== articleUrl));
+  };
+
+  const updateBookmark = (articleUrl: string, data: { notes?: string; tags?: string[] }) => {
+    setBookmarks((prev) =>
+      prev.map((b) =>
+        b.article.url === articleUrl ? { ...b, ...data } : b
+      )
+    );
   };
 
   const isBookmarked = (articleUrl: string) => {
-    return bookmarks.some((b) => b.url === articleUrl);
+    return bookmarks.some((b) => b.article.url === articleUrl);
   };
 
-  const value = { bookmarks, addBookmark, removeBookmark, isBookmarked };
+  const getBookmark = (articleUrl: string) => {
+    return bookmarks.find((b) => b.article.url === articleUrl);
+  };
+
+  const value = { bookmarks, addBookmark, removeBookmark, updateBookmark, isBookmarked, getBookmark };
 
   return (
     <BookmarksContext.Provider value={value}>
