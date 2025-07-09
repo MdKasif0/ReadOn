@@ -17,6 +17,7 @@ import {
   Eye,
   MessageCircle,
   Loader2,
+  ExternalLink,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { analyzeArticle } from '@/ai/flows/article-analyzer';
@@ -136,9 +137,20 @@ export function ArticleDetailClient() {
         <div className="p-4">
           <h1 className="text-3xl font-bold">{article.title}</h1>
           
-          <p className="mt-4 text-lg text-foreground/80 whitespace-pre-wrap">{article.content || article.description}</p>
+          {(article.content || article.description) && (
+            <blockquote className="mt-6 border-l-4 border-primary/50 pl-4 text-foreground/80">
+              {article.content || article.description}
+            </blockquote>
+          )}
+
+          <Button asChild className="mt-6">
+            <a href={article.url} target="_blank" rel="noopener noreferrer">
+              Read Full Article
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </a>
+          </Button>
           
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-y-2 text-xs text-foreground/60">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-y-2 text-xs text-foreground/60">
             <div className="flex items-center gap-2">
                <Avatar className="h-6 w-6">
                 <AvatarImage src={`https://logo.clearbit.com/${new URL(article.source.url).hostname}`} alt={article.source.name} />
