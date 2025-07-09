@@ -8,7 +8,7 @@ import type { Article } from '@/lib/types';
 import { ArticleGrid } from '@/components/article-grid';
 import { ArticleSkeleton } from '@/components/article-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, Info } from 'lucide-react';
 import { MobileHeader } from '@/components/mobile-header';
 import { newsCategories } from '@/lib/categories';
 import { useSettings } from '@/providers/settings-provider';
@@ -36,7 +36,7 @@ function NewsFeed() {
     setIsLoading(true);
     setError(null);
 
-    const categoriesArray = multiCategories ? multiCategories.split(',').join(',') : [];
+    const categoriesArray = multiCategories ? multiCategories.split(',') : [];
     const isAdvancedSearch = !!query || categoriesArray.length > 0 || !!from;
 
     // Set page title based on filters
@@ -86,14 +86,8 @@ function NewsFeed() {
         const result = await articleSearch(searchInput);
 
         // Update the view with the latest articles from the network.
-        // This handles successful fetches, including searches that return no results.
         setArticles(result.results);
             
-        // If the fetch was successful but returned no articles, show a helpful message.
-        if (result.results.length === 0) {
-            setError("We couldn't find any articles for your criteria. Please try again with different filters.");
-        }
-
         // Update the cache for simple category views.
         if (!isAdvancedSearch) {
           await saveArticles(cacheCategory, result.results);
@@ -103,7 +97,8 @@ function NewsFeed() {
       // If the fetch fails, only show an error if we have nothing from the cache to display.
       // This prevents a jarring error message from appearing over stale-but-usable content.
       if (!hasCache) {
-        setError('Failed to fetch news articles. Please try again later.');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+        setError(errorMessage);
       }
     } finally {
       // Always ensure the loading state is turned off after the network request.
@@ -124,21 +119,31 @@ function NewsFeed() {
         <h1 className="mb-6 hidden text-3xl font-bold tracking-tight text-primary md:block">
           {pageTitle}
         </h1>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <Terminal className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        
         {isLoading ? (
           <ArticleGrid>
             {Array.from({ length: 9 }).map((_, i) => (
               <ArticleSkeleton key={i} />
             ))}
           </ArticleGrid>
+        ) : error ? (
+            <Alert variant="destructive" className="mb-4">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Error Fetching News</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        ) : articles.length > 0 ? (
+          <ArticleGrid articles={articles} />
         ) : (
-          !error && <ArticleGrid articles={articles} />
+            <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 p-12 text-center">
+              <Info className="mb-4 h-12 w-12 text-muted-foreground/50" />
+              <h2 className="text-xl font-semibold text-foreground">
+                No Articles Found
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                We couldn't find any articles for your criteria. Please try again with different filters.
+              </p>
+            </div>
         )}
       </div>
     </div>
