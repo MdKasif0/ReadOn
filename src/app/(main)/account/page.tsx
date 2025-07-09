@@ -7,17 +7,23 @@ import { auth } from "@/lib/firebase";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Loader2, LogOut, User as UserIcon, Moon, Sun } from "lucide-react";
 import { MobileHeader } from "@/components/mobile-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { useSettings } from "@/providers/settings-provider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supportedCountries } from "@/lib/countries";
+import { supportedLanguages } from "@/lib/languages";
+
 
 export default function AccountPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { country, setCountry, language, setLanguage } = useSettings();
 
   useEffect(() => setMounted(true), []);
 
@@ -73,6 +79,43 @@ export default function AccountPage() {
                             <LogOut className="mr-2 h-4 w-4" />
                             Log Out
                         </Button>
+                    </CardContent>
+                </Card>
+
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Preferences</CardTitle>
+                        <CardDescription>
+                            Set your default language and country for news articles.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div>
+                            <Label htmlFor="country-select">Default Country</Label>
+                            <Select value={country} onValueChange={setCountry}>
+                                <SelectTrigger id="country-select">
+                                    <SelectValue placeholder="Select a country" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {supportedCountries.map(c => (
+                                        <SelectItem key={c.code} value={c.code}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Label htmlFor="language-select">Default Language</Label>
+                            <Select value={language} onValueChange={setLanguage}>
+                                <SelectTrigger id="language-select">
+                                    <SelectValue placeholder="Select a language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {supportedLanguages.map(l => (
+                                        <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardContent>
                 </Card>
 
