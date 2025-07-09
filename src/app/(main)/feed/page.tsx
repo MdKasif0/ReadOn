@@ -41,8 +41,8 @@ function NewsFeed() {
       setIsLoadingMore(true);
     } else {
       setIsLoading(true);
+      setError(null);
     }
-    setError(null);
 
     const { query, singleCategory, multiCategories, country, language } = getFilterParams();
     const categoriesArray = multiCategories ? multiCategories.split(',') : [];
@@ -69,11 +69,24 @@ function NewsFeed() {
     // OFFLINE FIRST: Try to load from IndexedDB first for category views
     const cacheCategory = singleCategory || 'top';
     if (!isSearch && !isLoadMore) {
-      const cachedArticles = await getArticlesByCategory(cacheCategory);
-      if (cachedArticles && cachedArticles.length > 0) {
-        setArticles(cachedArticles);
-        // Show cache immediately, but still fetch fresh data in background
-        setIsLoading(false);
+      const cachedData = await getArticlesByCategory(cacheCategory);
+      if (cachedData && cachedData.articles.length > 0) {
+        setArticles(cachedData.articles);
+        setIsLoading(false); // Show cache immediately
+
+        // Check if cache is fresh enough (e.g., < 2 hours old)
+        const cacheAge = cachedData.fetchedAt ? Date.now() - new Date(cachedData.fetchedAt).getTime() : Infinity;
+        const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000;
+
+        if (cacheAge < TWO_HOURS_IN_MS) {
+            console.log(`Cache for ${cacheCategory} is fresh. Halting network fetch.`);
+            setError(null);
+            setNextPage(null); // No pagination for cached views
+            setIsLoading(false);
+            setIsLoadingMore(false);
+            return; // Exit early, we have fresh data
+        }
+        console.log(`Cache for ${cacheCategory} is stale. Fetching from network.`);
       }
     }
 
@@ -94,23 +107,28 @@ function NewsFeed() {
       setNextPage(result.nextPage);
       
       // Update IndexedDB with fresh data for offline use
-      if (!isSearch && result.results.length > 0) {
-        await saveArticles(cacheCategory, result.results);
+      if (!isSearch && result.results.length > 0 && result.fetchedAt) {
+        await saveArticles(cacheCategory, result.results, result.fetchedAt);
       }
 
     } catch (err) {
       console.error('Failed to fetch articles:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
-      setError(errorMessage);
+      // Only set error if we don't already have articles to show
+      if (articles.length === 0) {
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [getFilterParams, defaultCountry, defaultLanguage]);
+  }, [getFilterParams, defaultCountry, defaultLanguage, articles.length]);
 
   useEffect(() => {
     fetchArticles();
-  }, [fetchArticles]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getFilterParams, defaultCountry, defaultLanguage]);
+
 
   const handleLoadMore = () => {
     if (nextPage) {
@@ -158,7 +176,7 @@ function NewsFeed() {
                 No Articles Found
               </h2>
               <p className="mt-2 text-muted-foreground">
-                The cache for this category might be updating. Please check back later.
+                Please check back later, or try a different category.
               </p>
             </div>
         )}

@@ -45,6 +45,7 @@ const ArticleSearchOutputSchema = z.object({
     )
     .describe('The list of articles matching the search keywords.'),
   nextPage: z.string().nullable().describe('The token for the next page of results.'),
+  fetchedAt: z.string().optional().describe('The timestamp when the news was fetched from the source.'),
 });
 export type ArticleSearchOutput = z.infer<typeof ArticleSearchOutputSchema>;
 
@@ -128,7 +129,7 @@ export async function articleSearch(
 
   // Handle category browsing from Firestore cache
   const categoryToFetch = input.category || 'top';
-  console.log(`Fetching cached news for category: ${categoryToFetch}`);
+  console.log(`Fetching cached news for category: ${categoryToFetch} from Firestore.`);
 
   if (!db) {
     throw new Error('Firestore is not initialized.');
@@ -145,6 +146,7 @@ export async function articleSearch(
       return {
         results: articles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
         nextPage: null, // Disable pagination for cached views
+        fetchedAt: data.fetchedAt,
       };
     } else {
       console.log(`No cache found for category: ${categoryToFetch}. Performing a live fetch as a fallback.`);
