@@ -1,5 +1,5 @@
 
-import { Globe, Landmark, Rocket, Palette, Atom, Lightbulb, HeartPulse } from "lucide-react";
+import { Globe, Landmark, Rocket, Palette, Atom, Lightbulb, HeartPulse, Scale } from "lucide-react";
 
 export const newsCategories = [
     { name: "For You", slug: "top", icon: Globe },
@@ -9,4 +9,5 @@ export const newsCategories = [
     { name: "Sports", slug: "sports", icon: Atom },
     { name: "Science", slug: "science", icon: Lightbulb },
     { name: "Health", slug: "health", icon: HeartPulse },
+    { name: "Politics", slug: "politics", icon: Scale },
 ];
