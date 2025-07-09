@@ -35,7 +35,7 @@ export async function GET() {
   try {
     const newsCollection = collection(db, 'news');
     const fetchPromises = newsCategories.map(async (category) => {
-      const url = `https://gnews.io/api/v4/top-headlines?category=${category.slug}&lang=${language}&country=${country}&max=10&apikey=${apiKey}`;
+      const url = `https://gnews.io/api/v4/top-headlines?category=${category.slug}&lang=${language}&country=${country}&max=40&apikey=${apiKey}`;
       const response = await fetch(url);
 
       if (!response.ok) {

@@ -85,12 +85,20 @@ function NewsFeed() {
       
         const result = await articleSearch(searchInput);
 
-        // Update the view with the latest articles from the network.
-        setArticles(result.results);
-            
-        // Update the cache for simple category views.
-        if (!isAdvancedSearch) {
-          await saveArticles(cacheCategory, result.results);
+        // For advanced search, we just show the API results directly.
+        if (isAdvancedSearch) {
+            setArticles(result.results);
+        } else {
+            // For simple category views, save the latest articles to IndexedDB...
+            await saveArticles(cacheCategory, result.results);
+            // ...then reload the entire category from the DB to show the merged list.
+            const allCachedArticles = await getArticlesByCategory(cacheCategory);
+            if (allCachedArticles) {
+                setArticles(allCachedArticles);
+            } else {
+                // As a fallback, just show the latest fetched articles.
+                setArticles(result.results);
+            }
         }
     } catch (err) {
       console.error('Failed to fetch articles:', err);
