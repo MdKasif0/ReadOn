@@ -23,6 +23,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { analyzeArticle } from '@/ai/flows/article-analyzer';
 import { followUpOnArticle } from '@/ai/flows/article-follow-up';
 import { formatDistanceToNow } from 'date-fns';
+import { newsCategories } from '@/lib/categories';
+import Link from 'next/link';
 
 export function ArticleDetailClient() {
   const searchParams = useSearchParams();
@@ -92,6 +94,13 @@ export function ArticleDetailClient() {
     } finally {
         setIsAsking(false);
     }
+  };
+
+  const getCategorySlug = (topic: string) => {
+    const category = newsCategories.find(
+      (c) => c.name.toLowerCase() === topic.toLowerCase()
+    );
+    return category ? category.slug : null;
   };
 
   if (!article) {
@@ -170,9 +179,23 @@ export function ArticleDetailClient() {
                   <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
               ) : analysis && (
                   <div className="flex flex-wrap gap-2">
-                      {analysis.relatedTopics.map((topic: string) => (
-                          <Button key={topic} variant="secondary" size="sm" className="rounded-full h-auto py-1.5">{topic}</Button>
-                      ))}
+                      {analysis.relatedTopics.map((topic: string) => {
+                          const slug = getCategorySlug(topic);
+                          if (!slug) {
+                              return (
+                                  <Button key={topic} variant="secondary" size="sm" className="rounded-full h-auto py-1.5 cursor-default opacity-70">
+                                      #{topic}
+                                  </Button>
+                              );
+                          }
+                          return (
+                              <Button key={topic} variant="secondary" size="sm" asChild className="rounded-full h-auto py-1.5">
+                                  <Link href={`/feed?category=${slug}`}>
+                                      #{topic}
+                                  </Link>
+                              </Button>
+                          );
+                      })}
                   </div>
               )}
           </div>
