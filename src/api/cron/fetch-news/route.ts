@@ -115,7 +115,7 @@ export async function GET() {
         const docRef = doc(newsCollection, category.slug);
         await setDoc(docRef, {
           articles: allArticles,
-          updatedAt: new Date().toISOString(),
+          fetchedAt: new Date().toISOString(),
         });
         console.log(`Successfully fetched and stored ${allArticles.length} articles for category: ${category.name}`);
       }
