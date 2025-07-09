@@ -43,14 +43,14 @@ const borderClasses: { [key: string]: string } = {
 };
 
 export function ArticleCard({ article, index }: ArticleCardProps) {
-  const articleData = encodeURIComponent(JSON.stringify(article));
+  const articleUrl = encodeURIComponent(article.url);
   const colorSuffix = cardColorSuffixes[index % cardColorSuffixes.length];
   const bgColorClass = backgroundClasses[colorSuffix];
   const borderColorClass = borderClasses[colorSuffix];
 
   return (
     <Card className={cn("flex flex-col overflow-hidden rounded-2xl shadow-lg border-2 bg-transparent", borderColorClass)}>
-      <Link href={`/article?data=${articleData}`}>
+      <Link href={`/article?url=${articleUrl}`}>
         <div className="overflow-hidden">
           <Image
             src={article.imageUrl}
@@ -66,7 +66,7 @@ export function ArticleCard({ article, index }: ArticleCardProps) {
       </Link>
       <div className={cn("flex flex-col flex-grow p-4 text-accent-foreground", bgColorClass)}>
         <h2 className="text-xl font-bold leading-tight line-clamp-3">
-          <Link href={`/article?data=${articleData}`} className="hover:underline">
+          <Link href={`/article?url=${articleUrl}`} className="hover:underline">
             {article.title}
           </Link>
         </h2>

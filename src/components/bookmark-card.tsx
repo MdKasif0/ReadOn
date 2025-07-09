@@ -18,11 +18,11 @@ import {
 
 export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
   const { article, notes, tags } = bookmark;
-  const articleData = encodeURIComponent(JSON.stringify(article));
+  const articleUrl = encodeURIComponent(article.url);
 
   return (
     <Card className="flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl">
-      <Link href={`/article?data=${articleData}`} className="group">
+      <Link href={`/article?url=${articleUrl}`} className="group">
         <div className="relative overflow-hidden">
           <Image
             src={article.imageUrl}
@@ -35,7 +35,7 @@ export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
       </Link>
       <CardContent className="flex flex-1 flex-col p-4">
         <h2 className="text-lg font-bold leading-tight line-clamp-2">
-          <Link href={`/article?data=${articleData}`} className="hover:underline">
+          <Link href={`/article?url=${articleUrl}`} className="hover:underline">
             {article.title}
           </Link>
         </h2>

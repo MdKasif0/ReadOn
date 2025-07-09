@@ -91,6 +91,21 @@ export async function getArticlesByCategory(category: string): Promise<Article[]
   return null;
 }
 
+export async function getArticleByUrl(url: string): Promise<Article | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const db = await getDb();
+    const entry = await db.get(ARTICLES_STORE_NAME, url);
+    if (entry) {
+      console.log(`Serving article with URL '${url}' from IndexedDB.`);
+      return entry.article;
+    }
+  } catch (error) {
+    console.error(`Failed to get article with URL '${url}' from IndexedDB:`, error);
+  }
+  return null;
+}
+
 export async function saveArticles(category: string, articles: Article[]): Promise<void> {
   if (typeof window === 'undefined') return;
 

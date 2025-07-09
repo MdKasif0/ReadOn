@@ -27,6 +27,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { newsCategories } from '@/lib/categories';
 import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { getArticleByUrl } from '@/lib/indexed-db';
 
 export function ArticleDetailClient() {
   const searchParams = useSearchParams();
@@ -49,36 +50,43 @@ export function ArticleDetailClient() {
   }, []);
 
   useEffect(() => {
-    const articleData = searchParams.get('data');
-    if (articleData) {
-      try {
-        const decodedArticle = JSON.parse(decodeURIComponent(articleData));
-        setArticle(decodedArticle);
-
-        const analysisInput = {
-          title: decodedArticle.title,
-          description: decodedArticle.description,
-        };
-
-        analyzeArticle(analysisInput)
-          .then(setAnalysis)
-          .catch(console.error)
-          .finally(() => setIsLoadingAnalysis(false));
-
-      } catch (error) {
-        console.error("Failed to parse article data", error);
-        router.push('/feed'); // Redirect if data is invalid
-      }
+    const articleUrl = searchParams.get('url');
+    if (articleUrl) {
+      const decodedUrl = decodeURIComponent(articleUrl);
+      getArticleByUrl(decodedUrl)
+        .then((cachedArticle) => {
+          if (cachedArticle) {
+            setArticle(cachedArticle);
+          } else {
+            console.error(`Article with url ${decodedUrl} not found in cache. Redirecting.`);
+            router.push('/feed');
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching article from DB', err);
+          router.push('/feed');
+        });
     } else {
-        router.push('/feed'); // Redirect if no data
+      router.push('/feed'); // Redirect if no url
     }
   }, [searchParams, router]);
-  
+
   useEffect(() => {
-    // Set random view/comment counts only on the client-side after mount
     if (article) {
-        setViews(Math.floor(Math.random() * 2000));
-        setComments(Math.floor(Math.random() * 100));
+      setIsLoadingAnalysis(true);
+      const analysisInput = {
+        title: article.title,
+        description: article.description,
+      };
+
+      analyzeArticle(analysisInput)
+        .then(setAnalysis)
+        .catch(console.error)
+        .finally(() => setIsLoadingAnalysis(false));
+
+      // Set random view/comment counts only on the client-side after mount
+      setViews(Math.floor(Math.random() * 2000));
+      setComments(Math.floor(Math.random() * 100));
     }
   }, [article]);
 
