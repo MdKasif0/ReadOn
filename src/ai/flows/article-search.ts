@@ -147,9 +147,15 @@ export async function articleSearch(
         nextPage: null, // Disable pagination for cached views
       };
     } else {
-      console.log(`No cache found for category: ${categoryToFetch}. Returning empty.`);
-      // No cache exists yet, return empty. The cron job will populate it.
-      return { results: [], nextPage: null };
+      console.log(`No cache found for category: ${categoryToFetch}. Performing a live fetch as a fallback.`);
+      // No cache exists yet, perform a live fetch to populate it.
+      // The cron job will keep it updated later.
+      const liveResult = await fetchFromNewsdata({
+        categories: [categoryToFetch],
+        language: input.language,
+        country: input.country,
+      });
+      return liveResult;
     }
   } catch (error) {
     console.error(`Error fetching category '${categoryToFetch}' from Firestore:`, error);
