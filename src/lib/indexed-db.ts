@@ -1,3 +1,4 @@
+
 import type { DBSchema, IDBPDatabase } from 'idb';
 import { openDB } from 'idb';
 import type { Article } from '@/lib/types';
