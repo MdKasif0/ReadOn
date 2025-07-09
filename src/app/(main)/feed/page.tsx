@@ -98,7 +98,7 @@ function NewsFeed() {
         setIsLoading(false);
       }
     }
-  }, [searchParams, defaultCountry, defaultLanguage]);
+  }, [searchParams, defaultCountry, defaultLanguage, from, multiCategories, query, singleCategory, to]);
 
   useEffect(() => {
     fetchArticles();
