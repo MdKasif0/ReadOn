@@ -55,21 +55,17 @@ function NewsFeed() {
       setPageTitle('For You');
     }
 
-    // For simple category pages, try to load from IndexedDB first for an instant UI update
     const cacheCategory = singleCategory || 'general';
-    let hasCache = false;
+    let hasDisplayedCachedArticles = false;
+
+    // For simple category pages, try to load from IndexedDB first for an instant UI update
     if (!isAdvancedSearch) {
       const cachedArticles = await getArticlesByCategory(cacheCategory);
       if (cachedArticles && cachedArticles.length > 0) {
         setArticles(cachedArticles);
-        hasCache = true;
+        setIsLoading(false); // Stop full-page loading once cached data is shown.
+        hasDisplayedCachedArticles = true;
       }
-    }
-
-    // If we have cached articles, we can stop the main loading indicator for a
-    // "stale-while-revalidate" experience.
-    if(hasCache){
-        setIsLoading(false);
     }
     
     try {
@@ -85,11 +81,10 @@ function NewsFeed() {
       
         const result = await articleSearch(searchInput);
 
-        // For advanced search, we just show the API results directly.
         if (isAdvancedSearch) {
             setArticles(result.results);
         } else {
-            // For simple category views, save the latest articles to IndexedDB...
+            // For category views, save the latest articles to IndexedDB...
             await saveArticles(cacheCategory, result.results);
             // ...then reload the entire category from the DB to show the merged list.
             const allCachedArticles = await getArticlesByCategory(cacheCategory);
@@ -104,7 +99,7 @@ function NewsFeed() {
       console.error('Failed to fetch articles:', err);
       // If the fetch fails, only show an error if we have nothing from the cache to display.
       // This prevents a jarring error message from appearing over stale-but-usable content.
-      if (!hasCache) {
+      if (!hasDisplayedCachedArticles) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
         setError(errorMessage);
       }

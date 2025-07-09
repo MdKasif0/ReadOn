@@ -63,7 +63,7 @@ async function fetchFromGNews(params: {
 
   const lang = params.language || 'en';
   const country = params.country || 'us';
-  const max = 40;
+  const max = 100;
   let url = `https://gnews.io/api/v4/`;
 
   if (params.query) {
