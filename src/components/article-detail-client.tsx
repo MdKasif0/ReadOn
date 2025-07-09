@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -223,23 +222,25 @@ export function ArticleDetailClient() {
             </div>
           </div>
           
-          {article.description && (
-            <blockquote className="mt-8 border-l-4 border-primary/50 pl-4 text-lg italic text-foreground/80">
-              {article.description}
-            </blockquote>
-          )}
+          <div className="mt-8 space-y-4 text-base leading-relaxed text-foreground/90 md:text-lg">
+              {article.description ? (
+                  article.description.split('\n\n').filter(p => p.trim()).map((paragraph, index) => (
+                      <p key={index}>{paragraph}</p>
+                  ))
+              ) : null }
 
-          <div className="mt-8 space-y-4 text-base leading-relaxed text-foreground md:text-lg">
-            {article.content ? (
-              article.content.split('\n\n').filter(p => p.trim()).map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))
-            ) : (
-              <div className="mt-6 rounded-md border border-dashed p-6 text-center">
-                <p className="text-muted-foreground">The full content for this article could not be loaded.</p>
-                <p className="text-sm text-muted-foreground">Please use the link below to read the full story at the source.</p>
-              </div>
-            )}
+              {article.content && article.content !== article.description ? (
+                  article.content.split('\n\n').filter(p => p.trim()).map((paragraph, index) => (
+                      <p key={`content-${index}`} className="mt-4 italic text-muted-foreground">{paragraph}</p>
+                  ))
+              ) : null}
+
+              {!article.description && !article.content && (
+                  <div className="mt-6 rounded-md border border-dashed p-6 text-center">
+                      <p className="text-muted-foreground">The content for this article could not be loaded.</p>
+                      <p className="text-sm text-muted-foreground">Please use the link below to read the full story at the source.</p>
+                  </div>
+              )}
           </div>
 
           <Button asChild className="mt-8">
