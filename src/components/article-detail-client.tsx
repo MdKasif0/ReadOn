@@ -201,27 +201,14 @@ export function ArticleDetailClient() {
             style={{ width: '100%', height: 'auto' }}
           />
           <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-            Image from Unsplash
+            Image from source
           </div>
         </div>
 
-        <div className="p-4">
-          <h1 className="text-3xl font-bold">{article.title}</h1>
+        <div className="p-4 md:p-6 lg:p-8">
+          <h1 className="text-3xl font-bold md:text-4xl">{article.title}</h1>
           
-          {(article.content || article.description) && (
-            <blockquote className="mt-6 border-l-4 border-primary/50 pl-4 text-foreground/80">
-              {article.content || article.description}
-            </blockquote>
-          )}
-
-          <Button asChild className="mt-6">
-            <a href={article.url} target="_blank" rel="noopener noreferrer">
-              Read Full Article
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-          
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-y-2 text-xs text-foreground/60">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-y-2 text-xs text-foreground/60">
             <div className="flex items-center gap-2">
                <Avatar className="h-6 w-6">
                 <AvatarImage src={`https://logo.clearbit.com/${new URL(article.source.url).hostname}`} alt={article.source.name} />
@@ -236,7 +223,33 @@ export function ArticleDetailClient() {
             </div>
           </div>
           
-          <div className="mt-6">
+          {article.description && (
+            <blockquote className="mt-8 border-l-4 border-primary/50 pl-4 text-lg italic text-foreground/80">
+              {article.description}
+            </blockquote>
+          )}
+
+          <div className="mt-8 space-y-4 text-base leading-relaxed text-foreground md:text-lg">
+            {article.content ? (
+              article.content.split('\n\n').filter(p => p.trim()).map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))
+            ) : (
+              <div className="mt-6 rounded-md border border-dashed p-6 text-center">
+                <p className="text-muted-foreground">The full content for this article could not be loaded.</p>
+                <p className="text-sm text-muted-foreground">Please use the link below to read the full story at the source.</p>
+              </div>
+            )}
+          </div>
+
+          <Button asChild className="mt-8">
+            <a href={article.url} target="_blank" rel="noopener noreferrer">
+              Read Full Article
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </a>
+          </Button>
+          
+          <div className="mt-8">
               {isLoadingAnalysis ? (
                   <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
               ) : analysis && (
@@ -263,7 +276,7 @@ export function ArticleDetailClient() {
           </div>
             
           {followUpHistory.length > 0 && (
-              <div className="mt-6 space-y-4 border-t pt-4">
+              <div className="mt-8 space-y-4 border-t pt-6">
                   {followUpHistory.map((item, index) => (
                       <div key={index}>
                           <p className="font-semibold text-primary">{item.question}</p>
