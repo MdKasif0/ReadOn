@@ -23,7 +23,7 @@ function NewsFeed() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pageTitle, setPageTitle] = useState('For You');
+  const [pageTitle, setPageTitle] = useState('ReadOn');
 
   // For API-based pagination (live search)
   const [nextPage, setNextPage] = useState<string | null>(null);
@@ -68,9 +68,9 @@ function NewsFeed() {
             setPageTitle(categoryNames || 'Filtered News');
         } else if (singleCategory) {
             const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
-            setPageTitle(categoryDetails?.name || 'For You');
+            setPageTitle(categoryDetails?.name || 'ReadOn');
         } else {
-            setPageTitle('For You');
+            setPageTitle('ReadOn');
         }
     }
     
