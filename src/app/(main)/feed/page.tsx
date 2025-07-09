@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
@@ -42,7 +41,6 @@ function NewsFeed() {
       setIsLoadingMore(true);
     } else {
       setIsLoading(true);
-      // Don't clear articles here to avoid flicker when loading from cache first
     }
     setError(null);
 
@@ -74,11 +72,9 @@ function NewsFeed() {
       const cachedArticles = await getArticlesByCategory(cacheCategory);
       if (cachedArticles && cachedArticles.length > 0) {
         setArticles(cachedArticles);
-        setIsLoading(false); // Show cache immediately, but still fetch fresh data
+        // Show cache immediately, but still fetch fresh data in background
+        setIsLoading(false);
       }
-    } else if (!isLoadMore) {
-      // For new searches, clear previous articles
-      setArticles([]);
     }
 
     try {
@@ -94,7 +90,7 @@ function NewsFeed() {
       const result = await articleSearch(searchInput);
       
       // If loading more, append results. Otherwise, replace.
-      setArticles(prev => (isLoadMore && !isSearch) ? [...prev, ...result.results] : result.results);
+      setArticles(prev => (isLoadMore ? [...prev, ...result.results] : result.results));
       setNextPage(result.nextPage);
       
       // Update IndexedDB with fresh data for offline use
@@ -104,16 +100,13 @@ function NewsFeed() {
 
     } catch (err) {
       console.error('Failed to fetch articles:', err);
-      // Only show error if we have no cached articles to display
-      if (articles.length === 0) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
-        setError(errorMessage);
-      }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [getFilterParams, defaultCountry, defaultLanguage, articles.length]);
+  }, [getFilterParams, defaultCountry, defaultLanguage]);
 
   useEffect(() => {
     fetchArticles();
@@ -141,7 +134,7 @@ function NewsFeed() {
               <ArticleSkeleton key={i} />
             ))}
           </ArticleGrid>
-        ) : error ? (
+        ) : error && articles.length === 0 ? (
             <Alert variant="destructive" className="mb-4">
                 <Terminal className="h-4 w-4" />
                 <AlertTitle>Error Fetching News</AlertTitle>
