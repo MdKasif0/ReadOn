@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -25,6 +26,7 @@ import { followUpOnArticle } from '@/ai/flows/article-follow-up';
 import { formatDistanceToNow } from 'date-fns';
 import { newsCategories } from '@/lib/categories';
 import Link from 'next/link';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 export function ArticleDetailClient() {
   const searchParams = useSearchParams();
@@ -37,6 +39,14 @@ export function ArticleDetailClient() {
   const [isAsking, setIsAsking] = useState(false);
   const [views, setViews] = useState(0);
   const [comments, setComments] = useState(0);
+  const [isShareSupported, setIsShareSupported] = useState(false);
+
+  useEffect(() => {
+    // This check runs only once on the client after mount.
+    if (navigator.share) {
+      setIsShareSupported(true);
+    }
+  }, []);
 
   useEffect(() => {
     const articleData = searchParams.get('data');
@@ -71,6 +81,20 @@ export function ArticleDetailClient() {
         setComments(Math.floor(Math.random() * 100));
     }
   }, [article]);
+
+  const handleShare = async () => {
+    if (article && navigator.share) {
+      try {
+        await navigator.share({
+          title: article.title,
+          text: article.description,
+          url: article.url,
+        });
+      } catch (error) {
+        console.error('Error sharing article:', error);
+      }
+    }
+  };
 
   const handleFollowUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,6 +135,12 @@ export function ArticleDetailClient() {
     );
   }
 
+  const shareLinks = [
+    { name: 'Twitter', url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(article.url)}&text=${encodeURIComponent(article.title)}` },
+    { name: 'Facebook', url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(article.url)}` },
+    { name: 'WhatsApp', url: `https://api.whatsapp.com/send?text=${encodeURIComponent(article.title + ' ' + article.url)}` },
+  ];
+
   return (
     <div className="relative min-h-screen bg-card text-card-foreground">
       <header className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-2 md:p-4 bg-gradient-to-b from-black/60 to-transparent">
@@ -119,9 +149,33 @@ export function ArticleDetailClient() {
         </Button>
         <div className="flex items-center space-x-1 md:space-x-2">
           <BookmarkButton article={article} className="bg-black/40 text-white rounded-full hover:bg-black/60 hover:text-white" />
-          <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60">
-            <Share2 />
-          </Button>
+          
+          {isShareSupported ? (
+            <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60" onClick={handleShare}>
+              <Share2 />
+            </Button>
+          ) : (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60">
+                  <Share2 />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto">
+                <div className="flex flex-col gap-2">
+                  <p className="font-semibold text-center mb-1">Share via</p>
+                  {shareLinks.map(link => (
+                    <Button asChild variant="outline" key={link.name}>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                        {link.name}
+                      </a>
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+
           <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60">
             <MoreVertical />
           </Button>
