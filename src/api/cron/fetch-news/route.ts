@@ -5,12 +5,25 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { newsCategories } from '@/lib/categories';
 import type { Article } from '@/lib/types';
 
-/**
- * This is an API route that can be called by a scheduled job (e.g., a cron job).
- * It fetches 2 pages of news for all categories from the Newsdata.io API
- * and stores them in Firestore. This is scheduled to run every 2 hours to stay
- * within API limits.
- */
+// Helper function to process and filter articles from an API response
+const processArticles = (results: any[]): Article[] => {
+  return (results || [])
+    .map((article: any) => ({
+      title: article.title,
+      description: article.description || 'No description available.',
+      content: article.content || '',
+      url: article.link,
+      imageUrl: article.image_url || 'https://placehold.co/600x400.png',
+      publishedAt: article.pubDate,
+      source: {
+        name: article.source_id || 'Unknown Source',
+        url: article.source_url || '#',
+      },
+    }))
+    .filter((article: any) => article.title && article.url && article.title !== '[Removed]');
+};
+
+
 export async function GET() {
   if (!db) {
     return NextResponse.json(
@@ -36,10 +49,11 @@ export async function GET() {
     const newsCollection = collection(db, 'news');
     
     const fetchPromises = newsCategories.map(async (category) => {
-      let allArticles: Article[] = [];
+      // Using a Map to deduplicate articles by their URL
+      const articleMap = new Map<string, Article>();
       let nextPage: string | null = null;
 
-      // Fetch first page
+      // --- Fetch first page ---
       const searchParamsPage1 = new URLSearchParams({
         apikey: apiKey,
         language,
@@ -56,25 +70,11 @@ export async function GET() {
       }
       
       const dataPage1 = await responsePage1.json();
-      const articlesPage1: Article[] = (dataPage1.results || [])
-        .map((article: any) => ({
-          title: article.title,
-          description: article.description || 'No description available.',
-          content: article.content || '',
-          url: article.link,
-          imageUrl: article.image_url || 'https://placehold.co/600x400.png',
-          publishedAt: article.pubDate,
-          source: {
-            name: article.source_id || 'Unknown Source',
-            url: article.source_url || '#',
-          },
-        }))
-        .filter((article: any) => article.title && article.url);
-
-      allArticles.push(...articlesPage1);
+      const articlesPage1 = processArticles(dataPage1.results);
+      articlesPage1.forEach(article => articleMap.set(article.url, article));
       nextPage = dataPage1.nextPage || null;
 
-      // Fetch second page if available
+      // --- Fetch second page if available ---
       if (nextPage) {
         const searchParamsPage2 = new URLSearchParams({
           apikey: apiKey,
@@ -92,27 +92,16 @@ export async function GET() {
           // We still save page 1 data even if page 2 fails
         } else {
             const dataPage2 = await responsePage2.json();
-            const articlesPage2: Article[] = (dataPage2.results || [])
-            .map((article: any) => ({
-              title: article.title,
-              description: article.description || 'No description available.',
-              content: article.content || '',
-              url: article.link,
-              imageUrl: article.image_url || 'https://placehold.co/600x400.png',
-              publishedAt: article.pubDate,
-              source: {
-                name: article.source_id || 'Unknown Source',
-                url: article.source_url || '#',
-              },
-            }))
-            .filter((article: any) => article.title && article.url);
-            
-            allArticles.push(...articlesPage2);
+            const articlesPage2 = processArticles(dataPage2.results);
+            articlesPage2.forEach(article => articleMap.set(article.url, article));
         }
       }
 
+      const allArticles = Array.from(articleMap.values());
+
       if (allArticles.length > 0) {
         const docRef = doc(newsCollection, category.slug);
+        // Save deduplicated articles and the timestamp
         await setDoc(docRef, {
           articles: allArticles,
           fetchedAt: new Date().toISOString(),

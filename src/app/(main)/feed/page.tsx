@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
@@ -24,7 +25,7 @@ function NewsFeed() {
   const [error, setError] = useState<string | null>(null);
   const [pageTitle, setPageTitle] = useState('For You');
 
-  // For API-based pagination
+  // For API-based pagination (live search)
   const [nextPage, setNextPage] = useState<string | null>(null);
 
   // For frontend-based pagination from cache
@@ -57,23 +58,23 @@ function NewsFeed() {
 
     // Set page title
     if (!isLoadMore) {
-      if (query) {
-        setPageTitle(`Search results for "${query}"`);
-      } else if (categoriesArray.length > 0) {
-        const categoryNames = newsCategories
-          .filter(c => categoriesArray.includes(c.slug))
-          .map(c => c.name)
-          .join(' & ');
-        setPageTitle(categoryNames || 'Filtered News');
-      } else if (singleCategory) {
-        const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
-        setPageTitle(categoryDetails?.name || 'For You');
-      } else {
-        setPageTitle('For You');
-      }
+        if (query) {
+            setPageTitle(`Search results for "${query}"`);
+        } else if (categoriesArray.length > 0) {
+            const categoryNames = newsCategories
+            .filter(c => categoriesArray.includes(c.slug))
+            .map(c => c.name)
+            .join(' & ');
+            setPageTitle(categoryNames || 'Filtered News');
+        } else if (singleCategory) {
+            const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
+            setPageTitle(categoryDetails?.name || 'For You');
+        } else {
+            setPageTitle('For You');
+        }
     }
     
-    // Use live search for queries or multi-category filters
+    // Branch for live searches (query or multi-category)
     if (isSearch) {
         try {
             const result = await articleSearch({
@@ -87,7 +88,7 @@ function NewsFeed() {
             setNextPage(result.nextPage);
         } catch(err) {
             console.error('Failed to fetch live search articles:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news. Please try again later.';
             if (articles.length === 0) {
                 setError(errorMessage);
             }
@@ -98,18 +99,18 @@ function NewsFeed() {
         return;
     }
     
-    // For single category browsing, use offline-first cache strategy
+    // Branch for single category browsing (offline-first)
     const cacheCategory = singleCategory || 'top';
     
     if (!isLoadMore) {
-        // Try to load from IndexedDB first
+        // Step 1: Try to load from IndexedDB first.
         const cachedData = await getArticlesByCategory(cacheCategory);
         if (cachedData && cachedData.articles.length > 0) {
             setAllCachedArticles(cachedData.articles);
             setArticles(cachedData.articles.slice(0, ARTICLES_PER_PAGE));
             setIsLoading(false);
 
-            // Check if cache is fresh enough (e.g., < 2 hours old)
+            // Step 2: Check if the cache is fresh enough (e.g., < 2 hours old).
             const cacheAge = cachedData.fetchedAt ? Date.now() - new Date(cachedData.fetchedAt).getTime() : Infinity;
             const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000;
 
@@ -118,21 +119,20 @@ function NewsFeed() {
                 setNextPage(null);
                 return; // Exit early, we have fresh data
             }
-             console.log(`Cache for ${cacheCategory} is stale. Fetching from network.`);
+             console.log(`Cache for ${cacheCategory} is stale. Fetching from network (Firestore).`);
         }
     }
 
     try {
+      // Step 3: If cache is stale or non-existent, fetch from Firestore.
       const result = await articleSearch({
         category: cacheCategory,
         language: defaultLanguage,
         country: defaultCountry,
       });
       
-      // Update the view with fresh data and save to cache
       if (result.results.length > 0) {
         setAllCachedArticles(result.results);
-        // Only reset articles if it's not a load more action (which it isn't in this branch)
         if (!isLoadMore) {
           setArticles(result.results.slice(0, ARTICLES_PER_PAGE));
         }
@@ -146,8 +146,8 @@ function NewsFeed() {
       }
 
     } catch (err) {
-      console.error('Failed to fetch articles:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+      console.error('Failed to fetch articles from Firestore:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news. Please try again later.';
       if (articles.length === 0) {
         setError(errorMessage);
       }
@@ -155,12 +155,12 @@ function NewsFeed() {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [getFilterParams, defaultCountry, defaultLanguage]);
+  }, [getFilterParams, defaultLanguage, defaultCountry]);
 
   useEffect(() => {
     fetchArticles();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchArticles]);
+  }, [getFilterParams]);
 
 
   const handleLoadMore = () => {
@@ -212,17 +212,17 @@ function NewsFeed() {
               </div>
             )}
           </>
-        ) : (
+        ) : !isLoading ? (
             <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 p-12 text-center">
               <Info className="mb-4 h-12 w-12 text-muted-foreground/50" />
               <h2 className="text-xl font-semibold text-foreground">
                 No Articles Found
               </h2>
               <p className="mt-2 text-muted-foreground">
-                Please check back later, or try a different category.
+                There are no articles matching your criteria. Please check back later.
               </p>
             </div>
-        )}
+        ) : null }
       </div>
     </div>
   );

@@ -157,7 +157,8 @@ export async function articleSearch(
         language: input.language,
         country: input.country,
       });
-      return liveResult;
+      // Return a fetchedAt timestamp for the fallback so it can be cached
+      return { ...liveResult, fetchedAt: new Date().toISOString() };
     }
   } catch (error) {
     console.error(`Error fetching category '${categoryToFetch}' from Firestore:`, error);

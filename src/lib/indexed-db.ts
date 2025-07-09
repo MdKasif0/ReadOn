@@ -70,15 +70,16 @@ export async function cleanupExpiredArticles(): Promise<void> {
     const db = await getDb();
     const tx = db.transaction(ARTICLES_STORE_NAME, 'readwrite');
     const index = tx.store.index('by-timestamp');
-    const oneMonthAgo = Date.now() - EXPIRATION_DURATION;
+    const thirtyDaysAgo = Date.now() - EXPIRATION_DURATION;
     
-    let cursor = await index.openCursor(IDBKeyRange.upperBound(oneMonthAgo));
+    let cursor = await index.openCursor(IDBKeyRange.upperBound(thirtyDaysAgo));
 
     while (cursor) {
       await cursor.delete();
       cursor = await cursor.continue();
     }
     await tx.done;
+    console.log('Successfully cleaned up expired articles from IndexedDB.');
   } catch (error) {
     console.error('Failed to clean up expired articles:', error);
   }
