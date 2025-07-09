@@ -37,20 +37,21 @@ function NewsFeed() {
   }, [searchParams]);
 
   const fetchArticles = useCallback(async (page?: string) => {
-    if (page) {
+    const isLoadMore = !!page;
+    if (isLoadMore) {
       setIsLoadingMore(true);
     } else {
       setIsLoading(true);
-      setArticles([]); // Clear articles for new search/category
-      setNextPage(null);
+      // Don't clear articles here to avoid flicker when loading from cache first
     }
     setError(null);
 
     const { query, singleCategory, multiCategories, country, language } = getFilterParams();
     const categoriesArray = multiCategories ? multiCategories.split(',') : [];
+    const isSearch = !!query || categoriesArray.length > 0;
 
-    // Set page title (only on first load)
-    if (!page) {
+    // Set page title
+    if (!isLoadMore) {
       if (query) {
         setPageTitle(`Search results for "${query}"`);
       } else if (categoriesArray.length > 0) {
@@ -67,57 +68,56 @@ function NewsFeed() {
       }
     }
     
-    // Offline/cache logic (only for initial category load)
-    const isSearch = !!query || (categoriesArray && categoriesArray.length > 0);
+    // OFFLINE FIRST: Try to load from IndexedDB first for category views
     const cacheCategory = singleCategory || 'top';
-    if (!isSearch && !page) {
-        const cachedArticles = await getArticlesByCategory(cacheCategory);
-        if (cachedArticles && cachedArticles.length > 0) {
-            setArticles(cachedArticles);
-            setIsLoading(false); // Show cache immediately
-        }
+    if (!isSearch && !isLoadMore) {
+      const cachedArticles = await getArticlesByCategory(cacheCategory);
+      if (cachedArticles && cachedArticles.length > 0) {
+        setArticles(cachedArticles);
+        setIsLoading(false); // Show cache immediately, but still fetch fresh data
+      }
+    } else if (!isLoadMore) {
+      // For new searches, clear previous articles
+      setArticles([]);
     }
 
     try {
       const searchInput = {
         query: query || undefined,
         category: !isSearch ? (singleCategory || 'top') : undefined,
-        categories: isSearch ? (categoriesArray || undefined) : undefined,
+        categories: isSearch ? (categoriesArray.length > 0 ? categoriesArray : undefined) : undefined,
         language: language || defaultLanguage,
         country: country || defaultCountry,
         page: page || undefined,
       };
       
       const result = await articleSearch(searchInput);
-
-      setArticles(prev => {
-        const existingUrls = new Set(prev.map(a => a.url));
-        const newArticles = result.results.filter(a => !existingUrls.has(a.url));
-        return [...prev, ...newArticles];
-      });
+      
+      // If loading more, append results. Otherwise, replace.
+      setArticles(prev => (isLoadMore && !isSearch) ? [...prev, ...result.results] : result.results);
       setNextPage(result.nextPage);
       
-      // Cache results for offline use
+      // Update IndexedDB with fresh data for offline use
       if (!isSearch && result.results.length > 0) {
         await saveArticles(cacheCategory, result.results);
       }
 
     } catch (err) {
       console.error('Failed to fetch articles:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
-      setError(errorMessage);
+      // Only show error if we have no cached articles to display
+      if (articles.length === 0) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [getFilterParams, defaultCountry, defaultLanguage]);
+  }, [getFilterParams, defaultCountry, defaultLanguage, articles.length]);
 
-  // Effect to handle fetching articles when search parameters change.
-  // The dependency array includes a serialized version of searchParams to ensure it reruns correctly.
   useEffect(() => {
     fetchArticles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams.toString()]);
+  }, [fetchArticles]);
 
   const handleLoadMore = () => {
     if (nextPage) {
@@ -135,7 +135,7 @@ function NewsFeed() {
           {pageTitle}
         </h1>
         
-        {isLoading ? (
+        {isLoading && articles.length === 0 ? (
           <ArticleGrid>
             {Array.from({ length: 10 }).map((_, i) => (
               <ArticleSkeleton key={i} />
@@ -165,7 +165,7 @@ function NewsFeed() {
                 No Articles Found
               </h2>
               <p className="mt-2 text-muted-foreground">
-                We couldn't find any articles for your criteria. Please try again with different filters.
+                The cache for this category might be updating. Please check back later.
               </p>
             </div>
         )}

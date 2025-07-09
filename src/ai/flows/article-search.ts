@@ -10,6 +10,10 @@
  */
 
 import { z } from 'zod';
+import { db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import type { Article } from '@/lib/types';
+
 
 const ArticleSearchInputSchema = z.object({
   query: z.string().optional().describe('The keywords to search for in news articles.'),
@@ -107,24 +111,48 @@ async function fetchFromNewsdata(params: {
 export async function articleSearch(
   input: ArticleSearchInput
 ): Promise<ArticleSearchOutput> {
-  // Combine single category and multiple categories for the API call
-  let allCategories = input.categories || [];
-  if (input.category && !allCategories.includes(input.category)) {
-      allCategories.push(input.category);
-  }
+  const isSearch = !!input.query || (input.categories && input.categories.length > 0);
   
-  // Default to 'top' news if no other criteria is provided on the first page load.
-  if (!input.query && allCategories.length === 0 && !input.page) {
-    allCategories.push('top');
+  // Handle live searches (with query or advanced filters)
+  if (isSearch) {
+    console.log("Performing live search...");
+    const searchResult = await fetchFromNewsdata({
+      query: input.query,
+      categories: input.categories,
+      language: input.language,
+      country: input.country,
+      page: input.page,
+    });
+    return searchResult;
   }
 
-  const searchResult = await fetchFromNewsdata({
-    query: input.query,
-    categories: allCategories,
-    language: input.language,
-    country: input.country,
-    page: input.page,
-  });
-  
-  return searchResult;
+  // Handle category browsing from Firestore cache
+  const categoryToFetch = input.category || 'top';
+  console.log(`Fetching cached news for category: ${categoryToFetch}`);
+
+  if (!db) {
+    throw new Error('Firestore is not initialized.');
+  }
+
+  try {
+    const docRef = doc(db, 'news', categoryToFetch);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const articles = (data.articles || []) as Article[];
+      console.log(`Found ${articles.length} cached articles for ${categoryToFetch}.`);
+      return {
+        results: articles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
+        nextPage: null, // Disable pagination for cached views
+      };
+    } else {
+      console.log(`No cache found for category: ${categoryToFetch}. Returning empty.`);
+      // No cache exists yet, return empty. The cron job will populate it.
+      return { results: [], nextPage: null };
+    }
+  } catch (error) {
+    console.error(`Error fetching category '${categoryToFetch}' from Firestore:`, error);
+    throw new Error(`Could not fetch news for category ${categoryToFetch}.`);
+  }
 }
