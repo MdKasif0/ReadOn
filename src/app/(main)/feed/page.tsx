@@ -36,7 +36,7 @@ function NewsFeed() {
     setIsLoading(true);
     setError(null);
 
-    const categoriesArray = multiCategories ? multiCategories.split(',') : [];
+    const categoriesArray = multiCategories ? multiCategories.split(',').join(',') : [];
     const isAdvancedSearch = !!query || categoriesArray.length > 0 || !!from;
 
     // Set page title based on filters
@@ -62,16 +62,21 @@ function NewsFeed() {
       const cachedArticles = await getArticlesByCategory(cacheCategory);
       if (cachedArticles && cachedArticles.length > 0) {
         setArticles(cachedArticles);
-        setIsLoading(false); // Stop main loader, show cached content
         hasCache = true;
       }
+    }
+
+    // If we have cached articles, we can stop the main loading indicator for a
+    // "stale-while-revalidate" experience.
+    if(hasCache){
+        setIsLoading(false);
     }
     
     try {
         const searchInput = {
             query: query || undefined,
             category: isAdvancedSearch ? undefined : (singleCategory || 'general'),
-            categories: categoriesArray.length > 0 ? categoriesArray : undefined,
+            categories: multiCategories ? multiCategories.split(',') : undefined,
             language: language || defaultLanguage,
             country: country || defaultCountry,
             from: from || undefined,
@@ -80,24 +85,29 @@ function NewsFeed() {
       
         const result = await articleSearch(searchInput);
 
-        if (result.results.length > 0) {
-            setArticles(result.results);
-            // Only cache results for simple, single-category views
-            if (!isAdvancedSearch) {
-              await saveArticles(cacheCategory, result.results);
-            }
-        } else if (!hasCache) {
+        // Update the view with the latest articles from the network.
+        // This handles successful fetches, including searches that return no results.
+        setArticles(result.results);
+            
+        // If the fetch was successful but returned no articles, show a helpful message.
+        if (result.results.length === 0) {
             setError("We couldn't find any articles for your criteria. Please try again with different filters.");
+        }
+
+        // Update the cache for simple category views.
+        if (!isAdvancedSearch) {
+          await saveArticles(cacheCategory, result.results);
         }
     } catch (err) {
       console.error('Failed to fetch articles:', err);
+      // If the fetch fails, only show an error if we have nothing from the cache to display.
+      // This prevents a jarring error message from appearing over stale-but-usable content.
       if (!hasCache) {
         setError('Failed to fetch news articles. Please try again later.');
       }
     } finally {
-      if (!hasCache) {
-        setIsLoading(false);
-      }
+      // Always ensure the loading state is turned off after the network request.
+      setIsLoading(false);
     }
   }, [searchParams, defaultCountry, defaultLanguage, from, multiCategories, query, singleCategory, to]);
 

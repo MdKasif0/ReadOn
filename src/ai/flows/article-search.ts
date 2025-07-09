@@ -58,8 +58,7 @@ async function fetchFromGNews(params: {
 }) {
   const apiKey = process.env.GNEWS_API_KEY;
   if (!apiKey) {
-    console.error('GNEWS_API_KEY is not set. Returning empty results.');
-    return [];
+    throw new Error('GNEWS_API_KEY is not set. Cannot fetch news.');
   }
 
   const lang = params.language || 'en';
@@ -80,36 +79,30 @@ async function fetchFromGNews(params: {
     return [];
   }
 
-  try {
-    // Use a short revalidation time for live fetches to keep content fresh but avoid excessive API calls on re-renders.
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache API response for 1 hour
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('GNews API Error:', errorData);
-      return [];
-    }
-    const data = await response.json();
-
-    const articles = data.articles
-      .map((article: any) => ({
-        title: article.title,
-        description: article.description || 'No description available.',
-        content: (article.content || '').replace(/\s*\[\+\d+\s*characters\]\s*$/, '').trim(),
-        url: article.url,
-        imageUrl: article.image || 'https://placehold.co/600x400.png',
-        publishedAt: article.publishedAt,
-        source: {
-          name: article.source.name,
-          url: article.source.url,
-        },
-      }))
-      .filter((article: any) => article.title !== '[Removed]');
-
-    return articles;
-  } catch (error) {
-    console.error('Failed to fetch articles from GNews:', error);
-    return [];
+  const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache API response for 1 hour
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error('GNews API Error:', errorData);
+    throw new Error(`Failed to fetch from GNews: ${response.statusText}`);
   }
+  const data = await response.json();
+
+  const articles = data.articles
+    .map((article: any) => ({
+      title: article.title,
+      description: article.description || 'No description available.',
+      content: (article.content || '').replace(/\s*\[\+\d+\s*characters\]\s*$/, '').trim(),
+      url: article.url,
+      imageUrl: article.image || 'https://placehold.co/600x400.png',
+      publishedAt: article.publishedAt,
+      source: {
+        name: article.source.name,
+        url: article.source.url,
+      },
+    }))
+    .filter((article: any) => article.title !== '[Removed]');
+
+  return articles;
 }
 
 export async function articleSearch(
