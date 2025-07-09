@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -36,8 +37,9 @@ export function MainSidebar() {
                   isActive={
                     pathname === '/feed' &&
                     !searchParams.get('q') &&
+                    !searchParams.get('categories') &&
                     (currentCategory === item.slug ||
-                      (!currentCategory && item.slug === "general"))
+                      (!currentCategory && item.slug === "top"))
                   }
                   tooltip={item.name}
                 >

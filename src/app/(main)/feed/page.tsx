@@ -8,115 +8,127 @@ import type { Article } from '@/lib/types';
 import { ArticleGrid } from '@/components/article-grid';
 import { ArticleSkeleton } from '@/components/article-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Info } from 'lucide-react';
+import { Terminal, Info, Loader2 } from 'lucide-react';
 import { MobileHeader } from '@/components/mobile-header';
 import { newsCategories } from '@/lib/categories';
 import { useSettings } from '@/providers/settings-provider';
 import { getArticlesByCategory, saveArticles } from '@/lib/indexed-db';
+import { Button } from '@/components/ui/button';
 
 function NewsFeed() {
   const searchParams = useSearchParams();
   const { language: defaultLanguage, country: defaultCountry } = useSettings();
 
-  // Extract all possible filter params from URL
-  const query = searchParams.get('q');
-  const singleCategory = searchParams.get('category');
-  const multiCategories = searchParams.get('categories');
-  const country = searchParams.get('country');
-  const language = searchParams.get('language');
-  const from = searchParams.get('from');
-  const to = searchParams.get('to');
-
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pageTitle, setPageTitle] = useState('For You');
-  
-  const fetchArticles = useCallback(async () => {
-    setIsLoading(true);
+  const [nextPage, setNextPage] = useState<string | null>(null);
+
+  const getFilterParams = useCallback(() => {
+    return {
+      query: searchParams.get('q'),
+      singleCategory: searchParams.get('category'),
+      multiCategories: searchParams.get('categories'),
+      country: searchParams.get('country'),
+      language: searchParams.get('language'),
+    };
+  }, [searchParams]);
+
+  const fetchArticles = useCallback(async (page?: string) => {
+    if (page) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+      setArticles([]); // Clear articles for new search/category
+      setNextPage(null);
+    }
     setError(null);
 
+    const { query, singleCategory, multiCategories, country, language } = getFilterParams();
     const categoriesArray = multiCategories ? multiCategories.split(',') : [];
-    const isAdvancedSearch = !!query || categoriesArray.length > 0 || !!from;
 
-    // Set page title based on filters
-    if (query) {
-      setPageTitle(`Search results for "${query}"`);
-    } else if (categoriesArray.length > 0) {
-      const categoryNames = newsCategories
-        .filter(c => categoriesArray.includes(c.slug))
-        .map(c => c.name)
-        .join(' & ');
-      setPageTitle(categoryNames || 'Filtered News');
-    } else if (singleCategory) {
-      const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
-      setPageTitle(categoryDetails?.name || 'For You');
-    } else {
-      setPageTitle('For You');
-    }
-
-    const cacheCategory = singleCategory || 'general';
-    let hasDisplayedCachedArticles = false;
-
-    // For simple category pages, try to load from IndexedDB first for an instant UI update
-    if (!isAdvancedSearch) {
-      const cachedArticles = await getArticlesByCategory(cacheCategory);
-      if (cachedArticles && cachedArticles.length > 0) {
-        setArticles(cachedArticles);
-        setIsLoading(false); // Stop full-page loading once cached data is shown.
-        hasDisplayedCachedArticles = true;
+    // Set page title (only on first load)
+    if (!page) {
+      if (query) {
+        setPageTitle(`Search results for "${query}"`);
+      } else if (categoriesArray.length > 0) {
+        const categoryNames = newsCategories
+          .filter(c => categoriesArray.includes(c.slug))
+          .map(c => c.name)
+          .join(' & ');
+        setPageTitle(categoryNames || 'Filtered News');
+      } else if (singleCategory) {
+        const categoryDetails = newsCategories.find(c => c.slug === singleCategory);
+        setPageTitle(categoryDetails?.name || 'For You');
+      } else {
+        setPageTitle('For You');
       }
     }
     
-    try {
-        const searchInput = {
-            query: query || undefined,
-            category: isAdvancedSearch ? undefined : (singleCategory || 'general'),
-            categories: multiCategories ? multiCategories.split(',') : undefined,
-            language: language || defaultLanguage,
-            country: country || defaultCountry,
-            from: from || undefined,
-            to: to || undefined,
-        };
-      
-        const result = await articleSearch(searchInput);
-
-        if (isAdvancedSearch) {
-            setArticles(result.results);
-        } else {
-            // For category views, save the latest articles to IndexedDB...
-            await saveArticles(cacheCategory, result.results);
-            // ...then reload the entire category from the DB to show the merged list.
-            const allCachedArticles = await getArticlesByCategory(cacheCategory);
-            if (allCachedArticles) {
-                setArticles(allCachedArticles);
-            } else {
-                // As a fallback, just show the latest fetched articles.
-                setArticles(result.results);
-            }
+    // Offline/cache logic (only for initial category load)
+    const isSearch = !!query || (categoriesArray && categoriesArray.length > 0);
+    const cacheCategory = singleCategory || 'top';
+    if (!isSearch && !page) {
+        const cachedArticles = await getArticlesByCategory(cacheCategory);
+        if (cachedArticles && cachedArticles.length > 0) {
+            setArticles(cachedArticles);
+            setIsLoading(false); // Show cache immediately
         }
+    }
+
+    try {
+      const searchInput = {
+        query: query || undefined,
+        category: !isSearch ? (singleCategory || 'top') : undefined,
+        categories: isSearch ? (categoriesArray || undefined) : undefined,
+        language: language || defaultLanguage,
+        country: country || defaultCountry,
+        page: page || undefined,
+      };
+      
+      const result = await articleSearch(searchInput);
+
+      setArticles(prev => {
+        const existingUrls = new Set(prev.map(a => a.url));
+        const newArticles = result.results.filter(a => !existingUrls.has(a.url));
+        return [...prev, ...newArticles];
+      });
+      setNextPage(result.nextPage);
+      
+      // Cache results for offline use
+      if (!isSearch && result.results.length > 0) {
+        await saveArticles(cacheCategory, result.results);
+      }
+
     } catch (err) {
       console.error('Failed to fetch articles:', err);
-      // If the fetch fails, only show an error if we have nothing from the cache to display.
-      // This prevents a jarring error message from appearing over stale-but-usable content.
-      if (!hasDisplayedCachedArticles) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
-        setError(errorMessage);
-      }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news articles. Please try again later.';
+      setError(errorMessage);
     } finally {
-      // Always ensure the loading state is turned off after the network request.
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
-  }, [searchParams, defaultCountry, defaultLanguage, from, multiCategories, query, singleCategory, to]);
+  }, [getFilterParams, defaultCountry, defaultLanguage]);
 
+  // Effect to handle fetching articles when search parameters change.
+  // The dependency array includes a serialized version of searchParams to ensure it reruns correctly.
   useEffect(() => {
     fetchArticles();
-  }, [fetchArticles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.toString()]);
+
+  const handleLoadMore = () => {
+    if (nextPage) {
+      fetchArticles(nextPage);
+    }
+  };
 
   return (
     <div>
       <div className="md:hidden">
-        <MobileHeader title="Discover" />
+        <MobileHeader title={pageTitle} />
       </div>
       <div className="p-4 sm:p-6 lg:p-8">
         <h1 className="mb-6 hidden text-3xl font-bold tracking-tight text-primary md:block">
@@ -125,7 +137,7 @@ function NewsFeed() {
         
         {isLoading ? (
           <ArticleGrid>
-            {Array.from({ length: 9 }).map((_, i) => (
+            {Array.from({ length: 10 }).map((_, i) => (
               <ArticleSkeleton key={i} />
             ))}
           </ArticleGrid>
@@ -136,7 +148,16 @@ function NewsFeed() {
                 <AlertDescription>{error}</AlertDescription>
             </Alert>
         ) : articles.length > 0 ? (
-          <ArticleGrid articles={articles} />
+          <>
+            <ArticleGrid articles={articles} />
+            {nextPage && (
+              <div className="mt-8 flex justify-center">
+                <Button onClick={handleLoadMore} disabled={isLoadingMore}>
+                  {isLoadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Load More'}
+                </Button>
+              </div>
+            )}
+          </>
         ) : (
             <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/50 p-12 text-center">
               <Info className="mb-4 h-12 w-12 text-muted-foreground/50" />

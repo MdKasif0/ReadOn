@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
@@ -6,9 +7,7 @@ import type { Article } from '@/lib/types';
 
 /**
  * This is an API route that can be called by a scheduled job (e.g., a cron job).
- * It fetches news for all categories from the GNews API and stores them in Firestore.
- * To stay within the GNews free tier (100 requests/day), this endpoint
- * should be called periodically (e.g., every 2 hours), as each run makes one API request per category.
+ * It fetches news for all categories from the Newsdata.io API and stores them in Firestore.
  * This can be configured in `netlify.toml` for Netlify deployments.
  */
 export async function GET() {
@@ -19,45 +18,50 @@ export async function GET() {
     );
   }
 
-  const apiKey = process.env.GNEWS_API_KEY;
+  const apiKey = process.env.NEWSDATA_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { success: false, error: 'GNEWS_API_KEY is not set' },
+      { success: false, error: 'NEWSDATA_API_KEY is not set' },
       { status: 500 }
     );
   }
 
-  // Fetches for a default country and language.
-  // This can be customized or extended if needed.
   const country = 'us';
   const language = 'en';
 
   try {
     const newsCollection = collection(db, 'news');
     const fetchPromises = newsCategories.map(async (category) => {
-      const url = `https://gnews.io/api/v4/top-headlines?category=${category.slug}&lang=${language}&country=${country}&max=100&apikey=${apiKey}`;
+      const searchParams = new URLSearchParams({
+        apikey: apiKey,
+        language: language,
+        country: country,
+        category: category.slug,
+      });
+
+      const url = `https://newsdata.io/api/1/news?${searchParams.toString()}`;
       const response = await fetch(url);
 
       if (!response.ok) {
-        console.error(`GNews API error for category ${category.slug}:`, await response.text());
+        console.error(`Newsdata.io API error for category ${category.slug}:`, await response.text());
         return; // Skip this category on error
       }
 
       const data = await response.json();
-      const articles: Article[] = data.articles
+      const articles: Article[] = (data.results || [])
         .map((article: any) => ({
           title: article.title,
           description: article.description || 'No description available.',
-          content: (article.content || '').replace(/\s*\[\+\d+\s*characters\]\s*$/, '').trim(),
-          url: article.url,
-          imageUrl: article.image || 'https://placehold.co/600x400.png',
-          publishedAt: article.publishedAt,
+          content: article.content || '',
+          url: article.link,
+          imageUrl: article.image_url || 'https://placehold.co/600x400.png',
+          publishedAt: article.pubDate,
           source: {
-            name: article.source.name,
-            url: article.source.url,
+            name: article.source_id || 'Unknown Source',
+            url: article.source_url || '#',
           },
         }))
-        .filter((article: any) => article.title !== '[Removed]');
+        .filter((article: any) => article.title && article.url);
 
       const docRef = doc(newsCollection, category.slug);
       await setDoc(docRef, {

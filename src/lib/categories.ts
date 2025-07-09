@@ -1,7 +1,8 @@
+
 import { Globe, Landmark, Rocket, Palette, Atom, Lightbulb, HeartPulse } from "lucide-react";
 
 export const newsCategories = [
-    { name: "For You", slug: "general", icon: Globe },
+    { name: "For You", slug: "top", icon: Globe },
     { name: "Business", slug: "business", icon: Landmark },
     { name: "Technology", slug: "technology", icon: Rocket },
     { name: "Entertainment", slug: "entertainment", icon: Palette },
