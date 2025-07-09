@@ -20,11 +20,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { analyzeArticle } from '@/ai/flows/article-analyzer';
 import { followUpOnArticle } from '@/ai/flows/article-follow-up';
 import { formatDistanceToNow } from 'date-fns';
-import { newsCategories } from '@/lib/categories';
-import Link from 'next/link';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getArticleByUrl } from '@/lib/indexed-db';
 
@@ -32,8 +29,6 @@ export function ArticleDetailClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [article, setArticle] = useState<Article | null>(null);
-  const [analysis, setAnalysis] = useState<any | null>(null);
-  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
   const [followUpQuery, setFollowUpQuery] = useState('');
   const [followUpHistory, setFollowUpHistory] = useState<{ question: string; answer: string }[]>([]);
   const [isAsking, setIsAsking] = useState(false);
@@ -72,17 +67,6 @@ export function ArticleDetailClient() {
 
   useEffect(() => {
     if (article) {
-      setIsLoadingAnalysis(true);
-      const analysisInput = {
-        title: article.title,
-        description: article.description,
-      };
-
-      analyzeArticle(analysisInput)
-        .then(setAnalysis)
-        .catch(console.error)
-        .finally(() => setIsLoadingAnalysis(false));
-
       // Set random view/comment counts only on the client-side after mount
       setViews(Math.floor(Math.random() * 2000));
       setComments(Math.floor(Math.random() * 100));
@@ -125,13 +109,6 @@ export function ArticleDetailClient() {
     } finally {
         setIsAsking(false);
     }
-  };
-
-  const getCategorySlug = (topic: string) => {
-    const category = newsCategories.find(
-      (c) => c.name.toLowerCase() === topic.toLowerCase()
-    );
-    return category ? category.slug : null;
   };
 
   if (!article) {
@@ -249,32 +226,6 @@ export function ArticleDetailClient() {
               <ExternalLink className="ml-2 h-4 w-4" />
             </a>
           </Button>
-          
-          <div className="mt-8">
-              {isLoadingAnalysis ? (
-                  <div className="flex justify-center py-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
-              ) : analysis && (
-                  <div className="flex flex-wrap gap-2">
-                      {analysis.relatedTopics.map((topic: string) => {
-                          const slug = getCategorySlug(topic);
-                          if (!slug) {
-                              return (
-                                  <Button key={topic} variant="secondary" size="sm" className="rounded-full h-auto py-1.5 cursor-default opacity-70">
-                                      #{topic}
-                                  </Button>
-                              );
-                          }
-                          return (
-                              <Button key={topic} variant="secondary" size="sm" asChild className="rounded-full h-auto py-1.5">
-                                  <Link href={`/feed?category=${slug}`}>
-                                      #{topic}
-                                  </Link>
-                              </Button>
-                          );
-                      })}
-                  </div>
-              )}
-          </div>
             
           {followUpHistory.length > 0 && (
               <div className="mt-8 space-y-4 border-t pt-6">
