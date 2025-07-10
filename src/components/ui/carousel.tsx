@@ -155,21 +155,7 @@ const Carousel = React.forwardRef<
           aria-roledescription="carousel"
           {...props}
         >
-            <div className="embla__container">
-                {React.Children.map(children, (child, index) => {
-                    if (React.isValidElement(child)) {
-                        const count = React.Children.count(
-                            (child.props as any).children?.props.children
-                        );
-
-                        return React.cloneElement(child as React.ReactElement, {
-                            scrollProgress: scrollProgress,
-                            slidesCount: count,
-                        } as any);
-                    }
-                    return child;
-                })}
-            </div>
+          {children}
         </div>
       </CarouselContext.Provider>
     )
@@ -179,8 +165,8 @@ Carousel.displayName = "Carousel"
 
 const CarouselContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { scrollProgress?: number; slidesCount?: number }
->(({ className, scrollProgress, slidesCount, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
 
   return (
