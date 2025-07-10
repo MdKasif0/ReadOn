@@ -40,6 +40,13 @@ export default {
           '9': 'hsl(var(--card-bg-9))',
           '10': 'hsl(var(--card-bg-10))',
         },
+        'card-stack': {
+          '1': 'hsl(var(--card-stack-1))',
+          '2': 'hsl(var(--card-stack-2))',
+          '3': 'hsl(var(--card-stack-3))',
+          '4': 'hsl(var(--card-stack-4))',
+          '5': 'hsl(var(--card-stack-5))',
+        },
         popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',

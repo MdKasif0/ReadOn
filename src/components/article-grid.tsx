@@ -1,15 +1,20 @@
 import type { Article } from "@/lib/types";
-import { ArticleCard } from "@/components/article-card";
+import { BookmarkCard } from "@/components/bookmark-card";
+import type { Bookmark } from "@/lib/types";
+
 
 interface ArticleGridProps {
   articles?: Article[];
+  bookmarks?: Bookmark[];
   children?: React.ReactNode;
 }
 
-export function ArticleGrid({ articles, children }: ArticleGridProps) {
+export function ArticleGrid({ articles, bookmarks, children }: ArticleGridProps) {
   return (
     <div className="flex flex-col gap-6 md:grid md:grid-cols-2 lg:grid-cols-3">
-      {articles ? articles.map((article, index) => <ArticleCard key={article.url} article={article} index={index} />) : children}
+      {articles && articles.map((article) => <BookmarkCard key={article.url} bookmark={{ article, notes: '', tags: [], addedAt: 0 }} />)}
+      {bookmarks && bookmarks.map((bookmark) => <BookmarkCard key={bookmark.article.url} bookmark={bookmark} />)}
+      {children}
     </div>
   );
 }

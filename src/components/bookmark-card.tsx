@@ -15,13 +15,40 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
-export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
+interface BookmarkCardProps {
+    bookmark: Bookmark;
+    className?: string;
+    displayMode?: 'grid' | 'stacked';
+}
+
+export function BookmarkCard({ bookmark, className, displayMode = 'grid' }: BookmarkCardProps) {
   const { article, notes, tags } = bookmark;
   const articleUrl = encodeURIComponent(article.url);
 
+  if (displayMode === 'stacked') {
+      return (
+        <Link href={`/article?url=${articleUrl}`} className="block">
+            <Card className={cn("overflow-hidden rounded-3xl h-[240px] shadow-lg", className)}>
+                <CardContent className="flex flex-col justify-between h-full p-6">
+                    <div>
+                        <h2 className="text-2xl font-bold leading-tight line-clamp-3">
+                            {article.title}
+                        </h2>
+                        <p className="mt-2 text-sm line-clamp-2">
+                            {article.description}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
+      )
+  }
+
+  // Default grid display
   return (
-    <Card className="flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl">
+    <Card className={cn("flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl", className)}>
       <Link href={`/article?url=${articleUrl}`} className="group">
         <div className="relative overflow-hidden">
           <Image

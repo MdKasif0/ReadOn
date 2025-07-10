@@ -63,6 +63,12 @@ body {
     --card-bg-8: 300 75% 52%;
     --card-bg-9: 60 80% 45%;
     --card-bg-10: 0 75% 50%;
+
+    --card-stack-1: 48 94% 90%; /* Light Yellow */
+    --card-stack-2: 339 77% 93%; /* Light Pink */
+    --card-stack-3: 198 77% 93%; /* Light Blue */
+    --card-stack-4: 258 77% 93%; /* Light Purple */
+    --card-stack-5: 25 77% 93%; /* Light Orange */
   }
   .dark {
     --background: 0 0% 8%; /* Dark Black */
@@ -118,6 +124,12 @@ body {
     --card-bg-8: 300 45% 36%;
     --card-bg-9: 60 50% 30%;
     --card-bg-10: 0 45% 35%;
+    
+    --card-stack-1: 48 94% 90%;
+    --card-stack-2: 339 77% 93%;
+    --card-stack-3: 198 77% 93%;
+    --card-stack-4: 258 77% 93%;
+    --card-stack-5: 25 77% 93%;
   }
 }
 

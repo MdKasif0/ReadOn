@@ -26,8 +26,9 @@ export default function MainLayout({
   const isInterestsPage = pathname.startsWith('/interests');
   const isSearchPage = pathname.startsWith('/search');
   const isArticlePage = pathname.startsWith('/article');
+  const isAccountPage = pathname.startsWith('/account');
 
-  const fullScreenPages = ['/feed', '/bookmarks', '/article', '/interests'];
+  const fullScreenPages = ['/feed', '/bookmarks', '/article', '/interests', '/account'];
   const isFullScreenPage = fullScreenPages.some(p => pathname.startsWith(p));
   
   // Only show the app shell for non-fullscreen pages on desktop
