@@ -1,20 +1,20 @@
 
 {
-  "name": "ReadOn - Your Daily News, Reimagined",
+  "name": "ReadOn",
   "short_name": "ReadOn",
-  "description": "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news.",
+  "description": "Your daily news, reimagined.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
+  "background_color": "#F0F4F8",
+  "theme_color": "#293B5F",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/readon-icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/readon-icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

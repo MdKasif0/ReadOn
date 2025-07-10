@@ -62,8 +62,7 @@ export default function AccountPage() {
                 {/* Pro Card */}
                 <div className="relative flex flex-col justify-end overflow-hidden rounded-2xl bg-card p-6 text-white shadow-lg h-56">
                     <Image 
-                        src="https://placehold.co/600x400.png"
-                        data-ai-hint="space book"
+                        src="/readon-pro.png"
                         alt="ReadOn Pro"
                         fill
                         className="object-cover"
