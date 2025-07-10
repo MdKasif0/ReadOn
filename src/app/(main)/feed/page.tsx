@@ -18,6 +18,10 @@ import { NewsStoryCard } from '@/components/news-story-card';
 
 const INTERESTS_STORAGE_KEY = 'readon-interests';
 
+const cardColors = [
+    "#FEF5D9", "#FCEAF1", "#E6F4F1", "#F0EAF9", "#DDEEFE", "#FFF8E1"
+];
+
 function NewsFeed() {
   const searchParams = useSearchParams();
   const { language: defaultLanguage, country: defaultCountry } = useSettings();
@@ -27,6 +31,7 @@ function NewsFeed() {
   const [error, setError] = useState<string | null>(null);
   const [displayedCategories, setDisplayedCategories] = useState<typeof newsCategories>([]);
   const [isInterestsLoaded, setIsInterestsLoaded] = useState(false);
+  const [articleColors, setArticleColors] = useState<string[]>([]);
 
   // For frontend-based pagination from cache
   const [allCachedArticles, setAllCachedArticles] = useState<Article[]>([]);
@@ -71,6 +76,11 @@ function NewsFeed() {
 
   const activeCategory = getFilterParams().singleCategory;
 
+  const assignColorsToArticles = (articles: Article[]) => {
+    const colors = articles.map(() => cardColors[Math.floor(Math.random() * cardColors.length)]);
+    setArticleColors(colors);
+  };
+
   const fetchArticles = useCallback(async () => {
     if (!isInterestsLoaded) return; // Don't fetch until we know the interests
 
@@ -93,6 +103,7 @@ function NewsFeed() {
                 country: country || defaultCountry,
             });
             setArticles(result.results);
+            assignColorsToArticles(result.results);
         } catch(err) {
             console.error('Failed to fetch live search articles:', err);
             const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news. Please try again later.';
@@ -110,6 +121,7 @@ function NewsFeed() {
     if (cachedData && cachedData.articles.length > 0) {
         setAllCachedArticles(cachedData.articles);
         setArticles(cachedData.articles);
+        assignColorsToArticles(cachedData.articles);
         setIsLoading(false);
 
         const cacheAge = cachedData.fetchedAt ? Date.now() - new Date(cachedData.fetchedAt).getTime() : Infinity;
@@ -132,6 +144,7 @@ function NewsFeed() {
       if (result.results.length > 0) {
         setAllCachedArticles(result.results);
         setArticles(result.results);
+        assignColorsToArticles(result.results);
         if (result.fetchedAt) {
           await saveArticles(cacheCategory, result.results, result.fetchedAt);
         }
@@ -179,12 +192,12 @@ function NewsFeed() {
 
     if (articles.length > 0) {
         return (
-            <Carousel className="w-full" opts={{ align: "center", loop: true }}>
+            <Carousel className="w-full" opts={{ align: "center", loop: false }}>
                 <CarouselContent className="-ml-2">
-                    {articles.map((article) => (
-                        <CarouselItem key={article.url} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                    {articles.map((article, index) => (
+                        <CarouselItem key={article.url} className="pl-4 basis-[90%] md:basis-1/2 lg:basis-1/3">
                             <div className="p-1">
-                                <NewsStoryCard article={article} />
+                                <NewsStoryCard article={article} color={articleColors[index]} />
                             </div>
                         </CarouselItem>
                     ))}
@@ -207,11 +220,11 @@ function NewsFeed() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-black text-white">
+    <div className="flex h-screen flex-col bg-black text-white overflow-hidden">
         <header className="p-4 pt-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight">ReadOn</h1>
-                <Button asChild variant="ghost" size="icon" className="rounded-full">
+                 <Button asChild variant="ghost" size="icon" className="rounded-full">
                     <Link href="/interests">
                         <Grip className="h-6 w-6" />
                     </Link>

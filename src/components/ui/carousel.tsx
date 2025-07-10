@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -67,6 +68,9 @@ const Carousel = React.forwardRef<
     )
     const [canScrollPrev, setCanScrollPrev] = React.useState(false)
     const [canScrollNext, setCanScrollNext] = React.useState(false)
+    
+    // Add state for scroll progress
+    const [scrollProgress, setScrollProgress] = React.useState(0);
 
     const onSelect = React.useCallback((api: CarouselApi) => {
       if (!api) {
@@ -76,6 +80,12 @@ const Carousel = React.forwardRef<
       setCanScrollPrev(api.canScrollPrev())
       setCanScrollNext(api.canScrollNext())
     }, [])
+
+    const onScroll = React.useCallback((api: CarouselApi) => {
+        if (!api) return;
+        const progress = Math.max(0, Math.min(1, api.scrollProgress()));
+        setScrollProgress(progress * 100);
+    }, []);
 
     const scrollPrev = React.useCallback(() => {
       api?.scrollPrev()
@@ -114,11 +124,14 @@ const Carousel = React.forwardRef<
       onSelect(api)
       api.on("reInit", onSelect)
       api.on("select", onSelect)
+      // Listen to scroll events
+      api.on("scroll", onScroll)
 
       return () => {
         api?.off("select", onSelect)
+        api?.off("scroll", onScroll)
       }
-    }, [api, onSelect])
+    }, [api, onSelect, onScroll])
 
     return (
       <CarouselContext.Provider
@@ -142,7 +155,21 @@ const Carousel = React.forwardRef<
           aria-roledescription="carousel"
           {...props}
         >
-          {children}
+            <div className="embla__container">
+                {React.Children.map(children, (child, index) => {
+                    if (React.isValidElement(child)) {
+                        const count = React.Children.count(
+                            (child.props as any).children?.props.children
+                        );
+
+                        return React.cloneElement(child as React.ReactElement, {
+                            scrollProgress: scrollProgress,
+                            slidesCount: count,
+                        } as any);
+                    }
+                    return child;
+                })}
+            </div>
         </div>
       </CarouselContext.Provider>
     )
@@ -152,8 +179,8 @@ Carousel.displayName = "Carousel"
 
 const CarouselContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { scrollProgress?: number; slidesCount?: number }
+>(({ className, scrollProgress, slidesCount, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
 
   return (
@@ -162,7 +189,7 @@ const CarouselContent = React.forwardRef<
         ref={ref}
         className={cn(
           "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          orientation === "horizontal" ? "items-center" : "-mt-4 flex-col",
           className
         )}
         {...props}
@@ -172,22 +199,64 @@ const CarouselContent = React.forwardRef<
 })
 CarouselContent.displayName = "CarouselContent"
 
+
 const CarouselItem = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
+  React.HTMLAttributes<HTMLDivElement> & { scrollProgress?: number; slidesCount?: number }
 >(({ className, ...props }, ref) => {
-  const { orientation } = useCarousel()
+  const { orientation, api } = useCarousel()
+  const [scale, setScale] = React.useState(1);
+  const [rotate, setRotate] = React.useState(0);
+  const [translateY, setTranslateY] = React.useState(0);
+
+  const onScroll = React.useCallback(() => {
+      if (!api) return;
+      
+      const slides = api.slideNodes();
+      const currentSlide = slides.find(slide => slide.contains(ref.current as Node));
+      if (!currentSlide) return;
+
+      const slideIndex = slides.indexOf(currentSlide);
+      const scroll = api.scrollProgress();
+
+      const position = (slideIndex - scroll);
+
+      const newScale = Math.max(0, 1 - Math.abs(position * 0.15));
+      const newTranslateY = Math.max(0, Math.abs(position * 20));
+      const newRotate = position * 5; // Rotate based on position
+
+      setScale(newScale);
+      setTranslateY(newTranslateY);
+      setRotate(newRotate);
+      
+  }, [api, ref]);
+
+  React.useEffect(() => {
+      if (!api) return;
+      api.on("scroll", onScroll);
+      onScroll();
+      return () => {
+          api.off("scroll", onScroll);
+      };
+  }, [api, onScroll]);
+
 
   return (
     <div
-      ref={ref}
+      ref={ref as any}
       role="group"
       aria-roledescription="slide"
       className={cn(
-        "min-w-0 shrink-0 grow-0 basis-full",
+        "min-w-0 shrink-0 grow-0 basis-full relative",
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
+       style={{
+         transform: `scale(${scale}) translateY(${translateY}px) rotate(${rotate}deg)`,
+         transition: 'transform 0.3s ease-out',
+         transformOrigin: 'bottom center',
+         zIndex: 100 - Math.round(Math.abs(translateY)),
+       }}
       {...props}
     />
   )
