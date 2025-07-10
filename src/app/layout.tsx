@@ -7,8 +7,44 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 
 export const metadata: Metadata = {
-  title: "ReadOn",
-  description: "Your daily source of news, powered by AI.",
+  title: {
+    default: "ReadOn",
+    template: "%s | ReadOn",
+  },
+  description: "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news.",
+  openGraph: {
+    title: "ReadOn",
+    description: "Your daily news, reimagined. Clean, fast, and focused on the news.",
+    url: "https://get-news.app", // Replace with your actual domain
+    siteName: "ReadOn",
+    images: [
+      {
+        url: 'https://placehold.co/1200x630.png', // Replace with your actual OG image
+        width: 1200,
+        height: 630,
+        alt: 'ReadOn - Your Daily News, Reimagined',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ReadOn',
+    description: 'Your daily news, reimagined. Clean, fast, and focused on the news.',
+    images: ['https://placehold.co/1200x630.png'], // Replace with your actual OG image
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
