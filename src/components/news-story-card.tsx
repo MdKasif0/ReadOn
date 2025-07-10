@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import type { Article } from "@/lib/types";
@@ -9,7 +8,6 @@ import { ThumbsUp, Share2 } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
 import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 
 export function NewsStoryCard({ article, color }: { article: Article, color: string }) {
 
@@ -27,7 +25,7 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
 
     return (
         <div 
-            className="group relative flex h-[75vh] max-h-[700px] w-full flex-col overflow-hidden rounded-3xl text-black shadow-lg transition-transform duration-500 ease-in-out"
+            className="group relative flex h-[75vh] max-h-[700px] w-full flex-col overflow-hidden rounded-3xl text-black shadow-lg"
             style={{ backgroundColor: color }}
         >
             <div className="absolute inset-x-0 bottom-0 z-10 flex justify-end p-4">
@@ -46,21 +44,23 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                  </div>
             </div>
 
-            <Link href={`/article?url=${articleUrl}`} className="flex flex-col flex-1 h-full">
-                <div className="relative h-1/3 w-full flex-shrink-0">
+            <div className="flex flex-col flex-1 h-full">
+                <Link href={`/article?url=${articleUrl}`} className="relative h-1/3 w-full flex-shrink-0">
                     <Image
                         src={article.imageUrl}
                         alt={article.title}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                </div>
+                </Link>
                 
                 <div className="flex flex-1 flex-col p-6 pb-20">
                     <div className="flex-shrink-0">
-                        <h1 className="text-2xl font-extrabold leading-tight tracking-tighter line-clamp-3">
-                            {article.title}
-                        </h1>
+                        <Link href={`/article?url=${articleUrl}`}>
+                            <h1 className="text-2xl font-extrabold leading-tight tracking-tighter line-clamp-3 hover:underline">
+                                {article.title}
+                            </h1>
+                        </Link>
                         <p className="mt-2 text-xs text-neutral-500">Updated just now.</p>
 
                         <div className="mt-4 flex items-center justify-between">
@@ -84,7 +84,7 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                         <p className="line-clamp-4">{article.description}</p>
                     </div>
                 </div>
-            </Link>
+            </div>
         </div>
     );
 }
