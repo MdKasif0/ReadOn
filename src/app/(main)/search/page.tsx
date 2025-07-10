@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ArticleGrid } from '@/components/article-grid';
 import { ArticleSkeleton } from '@/components/article-skeleton';
 import { useSettings } from '@/providers/settings-provider';
+import { saveArticles } from '@/lib/indexed-db';
 
 const suggestedTopics = [
   'Artificial Intelligence',
@@ -44,6 +45,11 @@ export default function SearchPage() {
         country,
       });
       setArticles(result.results);
+      // Cache the search results so they can be opened in the article detail view.
+      // We use the query as a temporary "category" for caching.
+      if (result.results.length > 0) {
+        await saveArticles(searchQuery, result.results, new Date().toISOString());
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(errorMessage);
@@ -105,7 +111,7 @@ export default function SearchPage() {
     }
 
     if (articles.length > 0) {
-      return <ArticleGrid articles={articles} />;
+      return <ArticleGrid articles={articles} displayMode="search" />;
     }
     
     // Initial state: show suggestions

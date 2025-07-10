@@ -7,13 +7,14 @@ interface ArticleGridProps {
   articles?: Article[];
   bookmarks?: Bookmark[];
   children?: React.ReactNode;
+  displayMode?: 'grid' | 'stacked' | 'search';
 }
 
-export function ArticleGrid({ articles, bookmarks, children }: ArticleGridProps) {
+export function ArticleGrid({ articles, bookmarks, children, displayMode = 'grid' }: ArticleGridProps) {
   return (
     <div className="flex flex-col gap-6 md:grid md:grid-cols-2 lg:grid-cols-3">
-      {articles && articles.map((article) => <BookmarkCard key={article.url} bookmark={{ article, notes: '', tags: [], addedAt: 0 }} />)}
-      {bookmarks && bookmarks.map((bookmark) => <BookmarkCard key={bookmark.article.url} bookmark={bookmark} />)}
+      {articles && articles.map((article) => <BookmarkCard key={article.url} bookmark={{ article, notes: '', tags: [], addedAt: 0 }} displayMode={displayMode} />)}
+      {bookmarks && bookmarks.map((bookmark) => <BookmarkCard key={bookmark.article.url} bookmark={bookmark} displayMode={displayMode} />)}
       {children}
     </div>
   );
