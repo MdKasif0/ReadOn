@@ -38,13 +38,6 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                         objectFit="cover"
                         className="transition-transform duration-300 group-hover:scale-105"
                     />
-                     <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded-full bg-red-500 px-3 py-1 text-xs font-bold uppercase text-white">
-                        <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-                        </span>
-                        LIVE
-                    </div>
                 </div>
                 
                 <div className="flex flex-1 flex-col p-6">
