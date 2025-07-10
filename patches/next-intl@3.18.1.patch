@@ -1,0 +1,37 @@
+diff --git a/node_modules/next-intl/package.json b/node_modules/next-intl/package.json
+index 517170a..738153c 100644
+--- a/node_modules/next-intl/package.json
++++ b/node_modules/next-intl/package.json
+@@ -62,6 +62,6 @@
+     "react-dom": ">=18.2.0"
+   },
+   "peerDependencies": {
+-    "next": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0",
++    "next": "^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0",
+     "react": ">=18.2.0"
+   },
+   "peerDependenciesMeta": {
+diff --git a/node_modules/next-intl/dist/src/plugin.js b/node_modules/next-intl/dist/src/plugin.js
+index f30f7b0..98d070b 100644
+--- a/node_modules/next-intl/dist/src/plugin.js
++++ b/node_modules/next-intl/dist/src/plugin.js
+@@ -32,10 +32,15 @@
+             const isAppDir = config.experimental?.appDir === true;
+             let requestHandler;
+             if (isAppDir) {
+-                const requestHandlerPath = require.resolve('next/dist/server/future/route-modules/app-page/module.compiled');
+-                const { default: AppRouteRouteModule } = await import(requestHandlerPath);
+-                // @ts-expect-error -- The type is not correct
+-                requestHandler = new AppRouteRouteModule({
++                let requestHandlerPath;
++                try {
++                    requestHandlerPath = require.resolve('next/dist/server/future/route-modules/app-page/module.compiled');
++                }
++                catch (err) {
++                    requestHandlerPath = require.resolve('next/dist/server/future/route-modules/app-page/module');
++                }
++                const { AppRouteRouteModule } = await import(requestHandlerPath);
++                requestHandler = new AppRouteRouteModule({
+                     userland: {
+                         loader: async () => ({
+                             default: () => new Response(null, { status: 404 })

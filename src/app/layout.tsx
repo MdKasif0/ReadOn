@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
@@ -5,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { BookmarksProvider } from "@/providers/bookmarks-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://read-on.netlify.app/'),
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
     template: "%s | ReadOn",
   },
   description: "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news.",
+  manifest: "/manifest.json",
   openGraph: {
     title: "ReadOn",
     description: "Your daily news, reimagined. Clean, fast, and focused on the news.",
@@ -83,6 +86,19 @@ export default function RootLayout({
             </SettingsProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Script id="service-worker-registration">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                  console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, err => {
+                  console.log('ServiceWorker registration failed: ', err);
+                });
+              });
+            }
+          `}
+        </Script>
       </body>
     </html>
   );
