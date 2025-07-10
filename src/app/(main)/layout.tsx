@@ -25,6 +25,7 @@ export default function MainLayout({
   const isBookmarksPage = pathname.startsWith('/bookmarks');
   const isInterestsPage = pathname.startsWith('/interests');
   const isSearchPage = pathname.startsWith('/search');
+  const isArticlePage = pathname.startsWith('/article');
 
   const fullScreenPages = ['/feed', '/bookmarks', '/article', '/interests'];
   const isFullScreenPage = fullScreenPages.some(p => pathname.startsWith(p));
@@ -39,7 +40,7 @@ export default function MainLayout({
             isInterestsPage ? "bg-[#FFF0F3] dark:bg-black" : ""
         )}>
             {children}
-            {!isInterestsPage && <BottomNav />}
+            {!isInterestsPage && !isArticlePage && <BottomNav />}
         </div>
      )
   }
