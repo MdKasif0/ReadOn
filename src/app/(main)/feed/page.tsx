@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { NewsStoryCard } from '@/components/news-story-card';
 
+const INTERESTS_STORAGE_KEY = 'readon-interests';
+
 function NewsFeed() {
   const searchParams = useSearchParams();
   const { language: defaultLanguage, country: defaultCountry } = useSettings();
@@ -23,23 +25,55 @@ function NewsFeed() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [displayedCategories, setDisplayedCategories] = useState<typeof newsCategories>([]);
+  const [isInterestsLoaded, setIsInterestsLoaded] = useState(false);
 
   // For frontend-based pagination from cache
   const [allCachedArticles, setAllCachedArticles] = useState<Article[]>([]);
 
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem(INTERESTS_STORAGE_KEY);
+      let selectedSlugs: string[];
+      if (storedData) {
+        selectedSlugs = JSON.parse(storedData);
+      } else {
+        // Default interests if nothing is stored
+        selectedSlugs = ['health', 'technology', 'sports', 'politics'];
+      }
+      const filteredCategories = newsCategories.filter(c => selectedSlugs.includes(c.slug));
+      setDisplayedCategories(filteredCategories);
+    } catch (error) {
+        console.error('Failed to load interests from localStorage', error);
+        // Fallback to a default set of categories
+        setDisplayedCategories(newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'general' && c.slug !== 'world' && c.slug !== 'nation'));
+    }
+    setIsInterestsLoaded(true);
+  }, []);
+
   const getFilterParams = useCallback(() => {
+    let singleCategory = searchParams.get('category');
+    // If no category is in the URL and we have loaded interests, default to the first one.
+    if (!singleCategory && isInterestsLoaded && displayedCategories.length > 0) {
+        singleCategory = displayedCategories[0].slug;
+    } else if (!singleCategory) {
+        singleCategory = 'top'; // Fallback if interests haven't loaded yet
+    }
+
     return {
       query: searchParams.get('q'),
-      singleCategory: searchParams.get('category') || 'top',
+      singleCategory: singleCategory,
       multiCategories: searchParams.get('categories'),
       country: searchParams.get('country'),
       language: searchParams.get('language'),
     };
-  }, [searchParams]);
+  }, [searchParams, isInterestsLoaded, displayedCategories]);
 
   const activeCategory = getFilterParams().singleCategory;
 
   const fetchArticles = useCallback(async () => {
+    if (!isInterestsLoaded) return; // Don't fetch until we know the interests
+
     setIsLoading(true);
     setError(null);
     setAllCachedArticles([]);
@@ -114,16 +148,16 @@ function NewsFeed() {
     } finally {
       setIsLoading(false);
     }
-  }, [getFilterParams, defaultLanguage, defaultCountry, articles.length, allCachedArticles.length]);
+  }, [getFilterParams, defaultLanguage, defaultCountry, articles.length, allCachedArticles.length, isInterestsLoaded]);
 
   useEffect(() => {
     fetchArticles();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getFilterParams]);
+  }, [getFilterParams, isInterestsLoaded]);
 
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading || !isInterestsLoaded) {
         return (
             <div className="flex h-[calc(100vh-200px)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -171,8 +205,6 @@ function NewsFeed() {
         </div>
     );
   }
-
-  const displayedCategories = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'general');
 
   return (
     <div className="flex h-screen flex-col bg-black text-white">
