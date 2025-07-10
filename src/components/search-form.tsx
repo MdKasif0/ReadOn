@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,11 @@ import { FilterSheet } from "./filter-sheet";
 export function SearchForm({ onSearch }: { onSearch?: (query: string) => void }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
   const debouncedQuery = useDebounce(query, 500);
-  const isFeedPage = useSearchParams().get('category') !== null || searchParams.get('q') !== null || usePathname() === '/feed';
+  const isFeedPage = searchParams.get('category') !== null || searchParams.get('q') !== null || pathname === '/feed';
 
 
   // Syncs the input field if the URL is changed by other means (e.g. back/forward buttons)
