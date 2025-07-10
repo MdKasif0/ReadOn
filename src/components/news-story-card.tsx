@@ -9,6 +9,7 @@ import { ThumbsUp, Share2 } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
 import Link from "next/link";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 export function NewsStoryCard({ article, color }: { article: Article, color: string }) {
 
@@ -29,18 +30,33 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
             className="group relative flex h-[75vh] max-h-[700px] w-full flex-col overflow-hidden rounded-3xl text-black shadow-lg transition-transform duration-500 ease-in-out"
             style={{ backgroundColor: color }}
         >
+            <div className="absolute inset-x-0 bottom-0 z-10 flex justify-end p-4">
+                 <div className="flex items-center gap-2 rounded-full bg-black/10 p-1 backdrop-blur-sm">
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-neutral-600 hover:bg-black/10 hover:text-black">
+                        <ThumbsUp className="h-5 w-5" />
+                    </Button>
+                    <BookmarkButton 
+                        article={article} 
+                        className="h-10 w-10 rounded-full text-neutral-600 hover:bg-black/10 hover:text-black"
+                        activeClassName="bg-red-500 text-white"
+                    />
+                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-neutral-600 hover:bg-black/10 hover:text-black">
+                        <Share2 className="h-5 w-5" />
+                    </Button>
+                 </div>
+            </div>
+
             <Link href={`/article?url=${articleUrl}`} className="flex flex-col flex-1 h-full">
                 <div className="relative h-1/3 w-full flex-shrink-0">
                     <Image
                         src={article.imageUrl}
                         alt={article.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transition-transform duration-300 group-hover:scale-105"
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                 </div>
                 
-                <div className="flex flex-1 flex-col p-6">
+                <div className="flex flex-1 flex-col p-6 pb-20">
                     <div className="flex-shrink-0">
                         <h1 className="text-2xl font-extrabold leading-tight tracking-tighter line-clamp-3">
                             {article.title}
@@ -69,20 +85,6 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                     </div>
                 </div>
             </Link>
-            
-            <div className="absolute bottom-4 right-4 flex flex-col items-center gap-4">
-                <Button variant="ghost" size="icon" className="rounded-full h-12 w-12 bg-black/5 text-neutral-600 hover:bg-black/10 hover:text-black">
-                    <ThumbsUp className="h-6 w-6" />
-                </Button>
-                 <BookmarkButton 
-                    article={article} 
-                    className="rounded-full h-12 w-12 bg-black/5 text-neutral-600 hover:bg-black/10 hover:text-black"
-                    activeClassName="bg-red-500 text-white"
-                />
-                <Button variant="ghost" size="icon" className="rounded-full h-12 w-12 bg-black/5 text-neutral-600 hover:bg-black/10 hover:text-black">
-                    <Share2 className="h-6 w-6" />
-                </Button>
-            </div>
         </div>
     );
 }
