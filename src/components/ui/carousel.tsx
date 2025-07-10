@@ -217,13 +217,14 @@ const CarouselItem = React.forwardRef<
       if (!currentSlide) return;
 
       const slideIndex = slides.indexOf(currentSlide);
-      const scroll = api.scrollProgress();
+      const scrollProgress = api.scrollProgress();
 
-      const position = (slideIndex - scroll);
+      // Calculate the slide's position relative to the viewport center
+      const position = (slideIndex - (scrollProgress * (api.scrollSnapList().length - 1)));
 
-      const newScale = Math.max(0, 1 - Math.abs(position * 0.15));
-      const newTranslateY = Math.max(0, Math.abs(position * 20));
-      const newRotate = position * 5; // Rotate based on position
+      const newScale = Math.max(0.8, 1 - Math.abs(position * 0.15));
+      const newTranslateY = Math.abs(position * 30);
+      const newRotate = position * -5;
 
       setScale(newScale);
       setTranslateY(newTranslateY);
@@ -233,10 +234,20 @@ const CarouselItem = React.forwardRef<
 
   React.useEffect(() => {
       if (!api) return;
-      api.on("scroll", onScroll);
-      onScroll();
+      
+      const handler = () => {
+        onScroll();
+      }
+
+      api.on("scroll", handler);
+      api.on("reInit", handler);
+      
+      // Initial call
+      handler();
+
       return () => {
-          api.off("scroll", onScroll);
+          api.off("scroll", handler);
+          api.off("reInit", handler);
       };
   }, [api, onScroll]);
 
