@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { Article } from "@/lib/types";
@@ -8,8 +9,6 @@ import { ThumbsUp, Share2 } from "lucide-react";
 import { BookmarkButton } from "./bookmark-button";
 import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
-
 
 export function NewsStoryCard({ article, color }: { article: Article, color: string }) {
 
@@ -23,6 +22,7 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
     }
     
     const articleUrl = encodeURIComponent(article.url);
+    const sourceHostname = article.source.url ? new URL(article.source.url).hostname : '';
 
     return (
         <div 
@@ -50,7 +50,7 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                         <div className="mt-4 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src={`https://i.pravatar.cc/40?u=${article.source.name}`} />
+                                    <AvatarImage src={`https://logo.clearbit.com/${sourceHostname}`} alt={article.source.name} />
                                     <AvatarFallback>{getInitials(article.source.name)}</AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -58,7 +58,9 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                                     <p className="text-sm font-bold -mt-1">{article.source.name}</p>
                                 </div>
                             </div>
-                            <Button className="rounded-full bg-black text-white hover:bg-neutral-800">Follow</Button>
+                            <Button asChild className="rounded-full bg-black text-white hover:bg-neutral-800">
+                                <Link href={`/article?url=${articleUrl}`}>Read Article</Link>
+                            </Button>
                         </div>
                     </div>
 
