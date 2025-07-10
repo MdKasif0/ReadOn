@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://your-app-domain.com'),
+  metadataBase: new URL('https://read-on.netlify.app/'),
   title: {
     default: "ReadOn",
     template: "%s | ReadOn",
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ReadOn",
     description: "Your daily news, reimagined. Clean, fast, and focused on the news.",
-    url: "https://your-app-domain.com",
+    url: "https://read-on.netlify.app/",
     siteName: "ReadOn",
     images: [
       {
