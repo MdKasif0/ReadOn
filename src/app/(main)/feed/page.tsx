@@ -114,7 +114,7 @@ function NewsFeed() {
     } finally {
       setIsLoading(false);
     }
-  }, [getFilterParams, defaultLanguage, defaultCountry]);
+  }, [getFilterParams, defaultLanguage, defaultCountry, articles.length, allCachedArticles.length]);
 
   useEffect(() => {
     fetchArticles();
