@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://get-news.app'), // Replace with your actual domain
+  metadataBase: new URL('https://your-app-domain.com'),
   title: {
     default: "ReadOn",
     template: "%s | ReadOn",
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ReadOn",
     description: "Your daily news, reimagined. Clean, fast, and focused on the news.",
-    url: "https://get-news.app", // Replace with your actual domain
+    url: "https://your-app-domain.com",
     siteName: "ReadOn",
     images: [
       {
-        url: '/og-image.png', // Relative to metadataBase
+        url: '/readon-cover.png',
         width: 1200,
         height: 630,
         alt: 'ReadOn - Your Daily News, Reimagined',
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ReadOn',
     description: 'Your daily news, reimagined. Clean, fast, and focused on the news.',
-    images: ['/og-image.png'], // Relative to metadataBase
+    images: ['/readon-cover.png'],
   },
   robots: {
     index: true,
