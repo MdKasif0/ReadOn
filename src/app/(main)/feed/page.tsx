@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
@@ -244,7 +245,7 @@ function NewsFeed() {
             </div>
         </header>
 
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center pb-20">
             {renderContent()}
         </main>
     </div>
