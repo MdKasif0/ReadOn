@@ -36,7 +36,7 @@ export function NewsStoryCard({ article, color }: { article: Article, color: str
                     <BookmarkButton 
                         article={article} 
                         className="h-10 w-10 rounded-full text-neutral-600 hover:bg-black/10 hover:text-black"
-                        activeClassName="bg-red-500 text-white"
+                        activeClassName="!bg-primary !text-primary-foreground"
                     />
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-neutral-600 hover:bg-black/10 hover:text-black">
                         <Share2 className="h-5 w-5" />

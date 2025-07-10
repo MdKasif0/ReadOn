@@ -33,10 +33,10 @@ export function BottomNav() {
               )}
             >
               <div className={cn("relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300",
-                isActive ? 'bg-white' : 'bg-transparent'
+                isActive ? 'bg-primary' : 'bg-transparent'
               )}>
                 <item.icon className={cn("h-5 w-5 transition-colors", 
-                  isActive ? 'text-black' : 'text-neutral-400 group-hover:text-white'
+                  isActive ? 'text-primary-foreground' : 'text-neutral-400 group-hover:text-white'
                 )} />
               </div>
             </Link>

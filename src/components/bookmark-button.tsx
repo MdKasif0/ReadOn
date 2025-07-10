@@ -38,9 +38,10 @@ export function BookmarkButton({ article, className, activeClassName }: Bookmark
   };
 
   const buttonClasses = cn(
-    "rounded-full",
+    "rounded-full text-foreground",
     className,
-    bookmarked && activeClassName
+    bookmarked && "text-primary fill-primary",
+    bookmarked && activeClassName,
   );
 
   if (!user) {
@@ -70,7 +71,7 @@ export function BookmarkButton({ article, className, activeClassName }: Bookmark
             onClick={handleBookmarkClick}
             className={buttonClasses}
           >
-            <Bookmark className={cn("h-5 w-5 transition-transform", bookmarked && "fill-current scale-110")} />
+            <Bookmark className={cn("h-5 w-5 transition-transform", bookmarked && "scale-110")} />
           </Button>
         </TooltipTrigger>
         <TooltipContent>

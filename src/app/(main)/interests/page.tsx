@@ -56,11 +56,11 @@ export default function InterestsPage() {
   const categoriesToShow = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'world' && c.slug !== 'general');
 
   if (!isLoaded) {
-    return <div className="h-screen w-full bg-[#FFF0F3] dark:bg-black" />;
+    return <div className="h-screen w-full bg-background" />;
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[#FFF0F3] p-6 dark:bg-black dark:text-white">
+    <div className="flex h-screen flex-col bg-background p-6">
       <header className="flex items-center">
         <Button variant="ghost" size="icon" onClick={() => router.back()} className="-ml-2">
           <ArrowLeft className="h-6 w-6" />
@@ -75,16 +75,16 @@ export default function InterestsPage() {
             <div
               key={category.slug}
               onClick={() => handleToggleInterest(category.slug)}
-              className="flex cursor-pointer items-center justify-between rounded-full bg-white p-2 pr-6 shadow-sm dark:bg-neutral-800"
+              className="flex cursor-pointer items-center justify-between rounded-full bg-card p-2 pr-6 shadow-sm border"
             >
               <div className="flex items-center gap-4">
                 <div
                   className={cn(
                     'flex h-12 w-12 items-center justify-center rounded-full transition-colors',
-                    isSelected ? 'bg-black dark:bg-white' : 'border-2 border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-800'
+                    isSelected ? 'bg-primary text-primary-foreground' : 'border-2 border-border bg-card'
                   )}
                 >
-                  {isSelected && <Check className="h-6 w-6 text-white dark:text-black" />}
+                  {isSelected && <Check className="h-6 w-6" />}
                 </div>
                 <span className="text-lg font-medium">{category.name}</span>
               </div>
@@ -96,7 +96,7 @@ export default function InterestsPage() {
       <footer className="mt-auto pt-4">
         <Button
           onClick={handleSubmit}
-          className="h-14 w-full rounded-full bg-black text-lg font-bold text-white dark:bg-white dark:text-black"
+          className="h-14 w-full rounded-full bg-primary text-primary-foreground text-lg font-bold"
         >
           Submit
         </Button>

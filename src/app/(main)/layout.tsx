@@ -35,10 +35,7 @@ export default function MainLayout({
 
   if (isFullScreenPage || isSearchPage) {
      return (
-        <div className={cn("bg-background", 
-            (isFeedPage || isBookmarksPage) ? "bg-black" : "",
-            isInterestsPage ? "bg-[#FFF0F3] dark:bg-black" : ""
-        )}>
+        <div className="bg-background">
             {children}
             {!isInterestsPage && !isArticlePage && <BottomNav />}
         </div>

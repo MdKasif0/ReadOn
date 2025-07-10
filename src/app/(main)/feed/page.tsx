@@ -173,7 +173,7 @@ function NewsFeed() {
     if (isLoading || !isInterestsLoaded) {
         return (
             <div className="flex h-[calc(100vh-200px)] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-white" />
+                <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         );
     }
@@ -207,7 +207,7 @@ function NewsFeed() {
     }
 
     return (
-        <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-black/50 p-12 text-center text-white">
+        <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center">
           <Info className="mb-4 h-12 w-12 text-muted-foreground/50" />
           <h2 className="text-xl font-semibold text-foreground">
             No Articles Found
@@ -220,7 +220,7 @@ function NewsFeed() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-black text-white overflow-hidden">
+    <div className="flex h-screen flex-col bg-background overflow-hidden">
         <header className="p-4 pt-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight">ReadOn</h1>
@@ -235,7 +235,7 @@ function NewsFeed() {
                     {displayedCategories.map(category => (
                          <Link key={category.slug} href={`/feed?category=${category.slug}`} className={cn(
                             "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                            activeCategory === category.slug ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'
+                            activeCategory === category.slug ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
                         )}>
                             {category.name}
                         </Link>
@@ -255,8 +255,8 @@ export default function FeedPage() {
   return (
     // The Suspense boundary is kept in case of slow initial param reading
     <Suspense fallback={
-        <div className="flex h-screen items-center justify-center bg-black">
-            <Loader2 className="h-8 w-8 animate-spin text-white" />
+        <div className="flex h-screen items-center justify-center bg-background">
+            <Loader2 className="h-8 w-8 animate-spin" />
         </div>
     }>
       <NewsFeed />
