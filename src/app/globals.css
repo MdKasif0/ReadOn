@@ -65,10 +65,10 @@ body {
     --card-bg-10: 0 75% 50%;
   }
   .dark {
-    --background: 222 28% 15%; /* Darker variant of Deep blue */
+    --background: 0 0% 8%; /* Dark Black */
     --foreground: 216 25% 97%; /* Very light gray #F0F4F8 */
 
-    --card: 222 28% 18%;
+    --card: 0 0% 12%;
     --card-foreground: 216 25% 97%;
 
     --popover: 222 28% 15%;
@@ -80,7 +80,7 @@ body {
     --secondary: 222 28% 22%;
     --secondary-foreground: 216 25% 97%;
     
-    --muted: 222 28% 22%;
+    --muted: 0 0% 15%;
     --muted-foreground: 216 25% 70%;
     
     --accent: 182 31% 45%; /* Lighter Soft teal for dark mode */
@@ -89,17 +89,17 @@ body {
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     
-    --border: 222 28% 25%;
-    --input: 222 28% 22%;
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
     --ring: 182 31% 45%;
 
-    --sidebar-background: 222 28% 12%;
+    --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 216 25% 97%;
     --sidebar-primary: 216 25% 97%;
     --sidebar-primary-foreground: 222 28% 26%;
     --sidebar-accent: 182 31% 34%;
     --sidebar-accent-foreground: 216 25% 97%;
-    --sidebar-border: 222 28% 25%;
+    --sidebar-border: 0 0% 18%;
     --sidebar-ring: 182 31% 45%;
     
     --chart-1: 220 30% 20%;
