@@ -126,7 +126,7 @@ export function ArticleDetailClient() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-card text-card-foreground">
+    <div className="relative min-h-screen bg-background text-card-foreground">
       <header className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-2 md:p-4 bg-gradient-to-b from-black/60 to-transparent">
         <Button variant="ghost" size="icon" className="bg-black/40 text-white rounded-full hover:bg-black/60" onClick={() => router.back()}>
           <X />
