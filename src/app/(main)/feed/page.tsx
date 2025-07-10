@@ -186,13 +186,11 @@ function NewsFeed() {
             <div className="mt-4 overflow-x-auto whitespace-nowrap pb-2">
                 <nav className="flex items-center space-x-4">
                     {displayedCategories.map(category => (
-                         <Link key={category.slug} href={`/feed?category=${category.slug}`} legacyBehavior>
-                            <a className={cn(
-                                "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-                                activeCategory === category.slug ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'
-                            )}>
-                                {category.name}
-                            </a>
+                         <Link key={category.slug} href={`/feed?category=${category.slug}`} className={cn(
+                            "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                            activeCategory === category.slug ? 'bg-white text-black' : 'text-neutral-400 hover:text-white'
+                        )}>
+                            {category.name}
                         </Link>
                     ))}
                 </nav>
