@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -29,14 +30,22 @@ export function BookmarkCard({ bookmark, className, displayMode = 'grid' }: Book
 
   if (displayMode === 'stacked') {
       return (
-        <Link href={`/article?url=${articleUrl}`} className="block">
-            <Card className={cn("overflow-hidden rounded-3xl h-[240px] shadow-lg", className)}>
-                <CardContent className="flex flex-col justify-between h-full p-6">
+        <Link href={`/article?url=${articleUrl}`} className="block group">
+            <Card className={cn("overflow-hidden rounded-3xl h-[240px] shadow-lg flex flex-col", className)}>
+                 <div className="relative h-2/5 w-full overflow-hidden">
+                    <Image
+                        src={article.imageUrl}
+                        alt={article.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                </div>
+                <CardContent className="flex flex-col justify-center flex-1 p-4">
                     <div>
-                        <h2 className="text-2xl font-bold leading-tight line-clamp-3">
+                        <h2 className="text-lg font-bold leading-tight line-clamp-2">
                             {article.title}
                         </h2>
-                        <p className="mt-2 text-sm line-clamp-2">
+                        <p className="mt-1 text-sm line-clamp-2 text-black/60">
                             {article.description}
                         </p>
                     </div>
