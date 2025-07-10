@@ -196,10 +196,10 @@ const CarouselItem = React.forwardRef<
   const [translateY, setTranslateY] = React.useState(0);
 
   const onScroll = React.useCallback(() => {
-      if (!api) return;
+      if (!api || !ref || !(ref as React.RefObject<HTMLDivElement>).current) return;
       
       const slides = api.slideNodes();
-      const currentSlide = slides.find(slide => slide.contains(ref.current as Node));
+      const currentSlide = slides.find(slide => slide.contains((ref as React.RefObject<HTMLDivElement>).current as Node));
       if (!currentSlide) return;
 
       const slideIndex = slides.indexOf(currentSlide);
