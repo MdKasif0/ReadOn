@@ -23,8 +23,9 @@ export default function MainLayout({
   
   const isFeedPage = pathname.startsWith('/feed');
   const isBookmarksPage = pathname.startsWith('/bookmarks');
+  const isInterestsPage = pathname.startsWith('/interests');
 
-  const fullScreenPages = ['/feed', '/bookmarks', '/article'];
+  const fullScreenPages = ['/feed', '/bookmarks', '/article', '/interests'];
   const isFullScreenPage = fullScreenPages.some(p => pathname.startsWith(p));
   
   // Only show the app shell for non-fullscreen pages on desktop
@@ -32,9 +33,12 @@ export default function MainLayout({
 
   if (isFullScreenPage) {
      return (
-        <div className={cn("bg-background", isFeedPage || isBookmarksPage ? "bg-black" : "")}>
+        <div className={cn("bg-background", 
+            (isFeedPage || isBookmarksPage) ? "bg-black" : "",
+            isInterestsPage ? "bg-[#FFF0F3] dark:bg-black" : ""
+        )}>
             {children}
-            <BottomNav />
+            {!isInterestsPage && <BottomNav />}
         </div>
      )
   }

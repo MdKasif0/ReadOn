@@ -172,15 +172,17 @@ function NewsFeed() {
     );
   }
 
-  const displayedCategories = newsCategories.filter(c => c.slug !== 'top');
+  const displayedCategories = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'general');
 
   return (
     <div className="flex h-screen flex-col bg-black text-white">
         <header className="p-4 pt-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight">ReadOn</h1>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <Grip className="h-6 w-6" />
+                <Button asChild variant="ghost" size="icon" className="rounded-full">
+                    <Link href="/interests">
+                        <Grip className="h-6 w-6" />
+                    </Link>
                 </Button>
             </div>
             <div className="mt-4 overflow-x-auto whitespace-nowrap pb-2">
