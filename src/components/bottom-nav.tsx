@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/feed", label: "Home", icon: Home },
   { href: "/search", label: "Search", icon: Search },
-  { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },
+  { href: "/bookmarks", label: "Saved", icon: Bookmark },
   { href: "/account", label: "Account", icon: User },
 ];
 
@@ -27,6 +27,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              aria-label={item.label}
               className={cn(
                 "group inline-flex flex-col items-center justify-center p-2 font-medium transition-colors duration-200"
               )}

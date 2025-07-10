@@ -22,12 +22,17 @@ export default function MainLayout({
   }
   
   const isFeedPage = pathname.startsWith('/feed');
-  // Only show the app shell for non-feed and non-article pages on desktop
-  const showDesktopShell = !isFeedPage && pathname !== '/article';
+  const isBookmarksPage = pathname.startsWith('/bookmarks');
 
-  if (isFeedPage) {
+  const fullScreenPages = ['/feed', '/bookmarks', '/article'];
+  const isFullScreenPage = fullScreenPages.some(p => pathname.startsWith(p));
+  
+  // Only show the app shell for non-fullscreen pages on desktop
+  const showDesktopShell = !isFullScreenPage;
+
+  if (isFullScreenPage) {
      return (
-        <div className="bg-black">
+        <div className={cn("bg-background", isFeedPage || isBookmarksPage ? "bg-black" : "")}>
             {children}
             <BottomNav />
         </div>

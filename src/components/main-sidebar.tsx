@@ -32,8 +32,8 @@ export function MainSidebar() {
         <SidebarMenu>
           {newsCategories.map((item) => (
             <SidebarMenuItem key={item.name}>
-              <Link href={`/feed?category=${item.slug}`}>
                 <SidebarMenuButton
+                  asChild
                   isActive={
                     pathname === '/feed' &&
                     !searchParams.get('q') &&
@@ -43,10 +43,11 @@ export function MainSidebar() {
                   }
                   tooltip={item.name}
                 >
-                  <item.icon />
-                  <span>{item.name}</span>
+                  <Link href={`/feed?category=${item.slug}`}>
+                    <item.icon />
+                    <span>{item.name}</span>
+                  </Link>
                 </SidebarMenuButton>
-              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -54,15 +55,16 @@ export function MainSidebar() {
       <SidebarFooter>
         <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/bookmarks">
-                    <SidebarMenuButton 
-                        isActive={pathname === "/bookmarks"}
-                        tooltip="Bookmarks"
-                    >
+                <SidebarMenuButton 
+                    asChild
+                    isActive={pathname === "/bookmarks"}
+                    tooltip="Saved"
+                >
+                    <Link href="/bookmarks">
                         <Bookmark />
-                        <span>Bookmarks</span>
-                    </SidebarMenuButton>
-                </Link>
+                        <span>Saved</span>
+                    </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
