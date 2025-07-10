@@ -1,107 +1,100 @@
-// A simple, offline-first service worker
-const CACHE_NAME = 'readon-cache-v2';
+
+// A unique name for the cache, updated with each new build
+const CACHE_NAME = 'readon-cache-v1';
+
+// A list of essential files to be cached for offline access
 const urlsToCache = [
   '/',
-  '/feed',
-  '/bookmarks',
-  '/account',
-  '/login',
-  '/signup',
-  '/fallback.html', // A fallback page for when offline and page not cached
-  // Add other critical assets like CSS, JS, and main images
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png',
-  '/manifest.json'
+  '/fallback', // A generic fallback page for offline navigation
+  '/manifest.json',
+  '/readon-icon.png',
+  // You can add more critical assets here like main JS/CSS bundles if needed.
+  // Note: Next.js generates hashed filenames, so be cautious with static asset paths.
+  // The fetch handler will cache assets dynamically as they are requested.
 ];
 
-// Install a service worker
-self.addEventListener('install', event => {
-  // Perform install steps
+// Install event: triggered when the service worker is first installed.
+self.addEventListener('install', (event) => {
+  console.log('Service Worker: Installing...');
+  // waitUntil ensures the SW doesn't proceed until the cache is populated.
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache).catch(err => {
-            console.error('Failed to cache URLs:', err);
-        });
+      .then((cache) => {
+        console.log('Service Worker: Caching app shell');
+        return cache.addAll(urlsToCache);
+      })
+      .catch(error => {
+        console.error('Service Worker: Failed to cache app shell during install', error);
       })
   );
 });
 
-// Cache and return requests
-self.addEventListener('fetch', event => {
-    // We only want to cache GET requests.
-    if (event.request.method !== 'GET') {
-        return;
-    }
-
-    // For navigation requests, use a network-first strategy.
-    if (event.request.mode === 'navigate') {
-        event.respondWith(
-            fetch(event.request)
-                .catch(() => caches.match('/fallback.html')) // Fallback for navigation errors
-        );
-        return;
-    }
-    
-    // For all other requests (CSS, JS, images), use a cache-first strategy.
-    event.respondWith(
-        caches.match(event.request)
-        .then(function(response) {
-            // Cache hit - return response
-            if (response) {
-            return response;
-            }
-
-            // IMPORTANT: Clone the request. A request is a stream and
-            // can only be consumed once. Since we are consuming this
-            // once by cache and once by the browser for fetch, we need
-            // to clone the response.
-            const fetchRequest = event.request.clone();
-
-            return fetch(fetchRequest).then(
-            function(response) {
-                // Check if we received a valid response
-                if(!response || response.status !== 200 || response.type !== 'basic') {
-                    // Don't cache third-party scripts or invalid responses
-                    return response;
-                }
-                
-                // IMPORTANT: Clone the response. A response is a stream
-                // and because we want the browser to consume the response
-                // as well as the cache consuming the response, we need
-                // to clone it so we have two streams.
-                const responseToCache = response.clone();
-
-                caches.open(CACHE_NAME)
-                .then(function(cache) {
-                    // We don't cache Firestore or Google API requests
-                    if (!event.request.url.includes('firestore') && !event.request.url.includes('googleapis')) {
-                        cache.put(event.request, responseToCache);
-                    }
-                });
-
-                return response;
-            }
-            );
-        })
-    );
-});
-
-
-// Update a service worker
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+// Activate event: triggered when the service worker becomes active.
+// This is the perfect time to clean up old, unused caches.
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker: Activating...');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+        cacheNames.map((cacheName) => {
+          // If a cache's name is not our current CACHE_NAME, it's old. Delete it.
+          if (cacheName !== CACHE_NAME) {
+            console.log(`Service Worker: Deleting old cache: ${cacheName}`);
             return caches.delete(cacheName);
           }
         })
       );
     })
+  );
+  // This ensures the new service worker takes control of the page immediately.
+  return self.clients.claim();
+});
+
+// Fetch event: triggered for every network request made by the page.
+self.addEventListener('fetch', (event) => {
+  // We only want to handle GET requests.
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // For navigation requests (to a new page), use a network-first strategy.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match('/fallback')) // Show a fallback page if network fails
+    );
+    return;
+  }
+
+  // For all other requests (CSS, JS, images), use a cache-first strategy.
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // If we found a match in the cache, return it.
+        if (response) {
+          return response;
+        }
+
+        // If not in cache, fetch it from the network.
+        return fetch(event.request).then((networkResponse) => {
+            // Clone the response because it's a one-time use stream.
+            const responseToCache = networkResponse.clone();
+            
+            // Open our cache and add the new resource to it.
+            caches.open(CACHE_NAME).then((cache) => {
+                // Don't cache unsuccessful responses
+                if (networkResponse.status < 400) {
+                    cache.put(event.request, responseToCache);
+                }
+            });
+            
+            // Return the network response to the browser.
+            return networkResponse;
+          }
+        ).catch(error => {
+            console.warn(`Service Worker: Network request for ${event.request.url} failed.`, error);
+            // Optionally, return a placeholder for failed assets like images
+        });
+      })
   );
 });
