@@ -20,8 +20,6 @@ export async function generateMetadata({ searchParams }: ArticlePageProps): Prom
 
   const decodedUrl = decodeURIComponent(articleUrl);
   // We attempt to fetch from a server-side cache/DB if available.
-  // This is a placeholder for a real server-side fetch.
-  // In a real app, you might fetch from Firestore here.
   const article = await getArticleByUrl(decodedUrl);
 
   if (!article) {

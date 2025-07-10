@@ -11,15 +11,15 @@ import Script from "next/script";
 export const metadata: Metadata = {
   metadataBase: new URL('https://read-on.netlify.app/'),
   title: {
-    default: "ReadOn",
+    default: "ReadOn - Your Daily News, Reimagined",
     template: "%s | ReadOn",
   },
-  description: "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news.",
+  description: "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news that matters.",
   manifest: "/manifest.json",
   icon: "/readon-icon.png",
   openGraph: {
-    title: "ReadOn",
-    description: "Your daily news, reimagined. Clean, fast, and focused on the news.",
+    title: "ReadOn - Your Daily News, Reimagined",
+    description: "Clean, fast, and focused on the news that matters. Get personalized headlines and intelligent search in one beautiful app.",
     url: "https://read-on.netlify.app/",
     siteName: "ReadOn",
     images: [
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ReadOn',
-    description: 'Your daily news, reimagined. Clean, fast, and focused on the news.',
+    title: 'ReadOn - Your Daily News, Reimagined',
+    description: 'Clean, fast, and focused on the news that matters. Get personalized headlines and intelligent search in one beautiful app.',
     images: ['/readon-cover.png'],
   },
   robots: {
