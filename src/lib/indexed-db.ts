@@ -132,7 +132,13 @@ export async function saveArticles(category: string, articles: Article[], fetche
     const articleStore = tx.objectStore(ARTICLES_STORE_NAME);
     const metadataStore = tx.objectStore(CACHE_METADATA_STORE_NAME);
     
-    const articlePromises = articles.map(article => {
+    // Use a Map to ensure articles are unique by URL before saving
+    const articleMap = new Map<string, Article>();
+    articles.forEach(article => articleMap.set(article.url, article));
+
+    const uniqueArticles = Array.from(articleMap.values());
+
+    const articlePromises = uniqueArticles.map(article => {
       const entry: ArticleCacheEntry = {
         url: article.url,
         article,
@@ -146,7 +152,7 @@ export async function saveArticles(category: string, articles: Article[], fetche
 
     await Promise.all([...articlePromises, metadataPromise]);
     await tx.done;
-    console.log(`Saved/updated ${articles.length} articles for '${category}' with fetchedAt ${fetchedAt} to IndexedDB.`);
+    console.log(`Saved/updated ${uniqueArticles.length} unique articles for '${category}' with fetchedAt ${fetchedAt} to IndexedDB.`);
   } catch (error) {
     console.error('Failed to save articles to IndexedDB:', error);
   }
