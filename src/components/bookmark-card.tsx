@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 interface BookmarkCardProps {
     bookmark: Bookmark;
@@ -27,6 +28,14 @@ interface BookmarkCardProps {
 export function BookmarkCard({ bookmark, className, displayMode = 'grid' }: BookmarkCardProps) {
   const { article, notes, tags } = bookmark;
   const articleUrl = encodeURIComponent(article.url);
+  const router = useRouter();
+
+  const handleSourceClick = (e: React.MouseEvent) => {
+    // Stop the click from propagating to the parent Link component
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(article.source.url, '_blank', 'noopener,noreferrer');
+  };
 
   if (displayMode === 'stacked') {
       return (
@@ -102,9 +111,9 @@ export function BookmarkCard({ bookmark, className, displayMode = 'grid' }: Book
             </div>
             <div className="mt-4 flex items-center justify-between border-t pt-2">
             <div className="truncate text-xs text-muted-foreground">
-                <a href={article.source.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {article.source.name}
-                </a>
+                 <span onClick={displayMode === 'search' ? handleSourceClick : undefined} className="hover:underline cursor-pointer">
+                    {article.source.name}
+                 </span>
             </div>
             <div className="flex items-center">
                 <EditBookmarkSheet bookmark={bookmark}>
