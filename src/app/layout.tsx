@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { SettingsProvider } from "@/providers/settings-provider";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://get-news.app'), // Replace with your actual domain
   title: {
     default: "ReadOn",
     template: "%s | ReadOn",
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     siteName: "ReadOn",
     images: [
       {
-        url: 'https://placehold.co/1200x630.png', // Replace with your actual OG image
+        url: '/og-image.png', // Relative to metadataBase
         width: 1200,
         height: 630,
         alt: 'ReadOn - Your Daily News, Reimagined',
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ReadOn',
     description: 'Your daily news, reimagined. Clean, fast, and focused on the news.',
-    images: ['https://placehold.co/1200x630.png'], // Replace with your actual OG image
+    images: ['/og-image.png'], // Relative to metadataBase
   },
   robots: {
     index: true,
