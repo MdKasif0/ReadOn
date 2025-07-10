@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -5,6 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { MainSidebar } from "@/components/main-sidebar";
 import { PageHeader } from "@/components/page-header";
 import { BottomNav } from "@/components/bottom-nav";
+import { cn } from "@/lib/utils";
 
 export default function MainLayout({
   children,
@@ -19,22 +21,33 @@ export default function MainLayout({
     return <>{children}</>;
   }
   
-  const showBottomNav = pathname !== '/article';
+  const isFeedPage = pathname.startsWith('/feed');
+  // Only show the app shell for non-feed and non-article pages on desktop
+  const showDesktopShell = !isFeedPage && pathname !== '/article';
+
+  if (isFeedPage) {
+     return (
+        <div className="bg-black">
+            {children}
+            <BottomNav />
+        </div>
+     )
+  }
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background">
-        <div className="hidden md:block">
+        <div className={cn("hidden", showDesktopShell && "md:block")}>
           <MainSidebar />
         </div>
         <div className="flex-1 pb-16 md:pb-0">
-          <div className="hidden md:flex">
+          <div className={cn("hidden", showDesktopShell && "md:flex")}>
             <PageHeader />
           </div>
           <main>{children}</main>
         </div>
       </div>
-      {showBottomNav && <BottomNav />}
+       <BottomNav />
     </SidebarProvider>
   );
 }

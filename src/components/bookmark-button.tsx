@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useBookmarks } from "@/providers/bookmarks-provider";
@@ -12,9 +13,10 @@ import { useRouter } from "next/navigation";
 interface BookmarkButtonProps {
   article: Article;
   className?: string;
+  activeClassName?: string;
 }
 
-export function BookmarkButton({ article, className }: BookmarkButtonProps) {
+export function BookmarkButton({ article, className, activeClassName }: BookmarkButtonProps) {
   const { user } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const router = useRouter();
@@ -23,6 +25,7 @@ export function BookmarkButton({ article, className }: BookmarkButtonProps) {
 
   const handleBookmarkClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!user) {
       router.push("/login");
       return;
@@ -34,12 +37,18 @@ export function BookmarkButton({ article, className }: BookmarkButtonProps) {
     }
   };
 
+  const buttonClasses = cn(
+    "rounded-full",
+    className,
+    bookmarked && activeClassName
+  );
+
   if (!user) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-             <Button variant="ghost" size="icon" className={cn("rounded-full text-muted-foreground/50 cursor-not-allowed", className)} disabled>
+             <Button variant="ghost" size="icon" className={cn("text-muted-foreground/50 cursor-not-allowed", className)} disabled>
                 <Bookmark className="h-5 w-5" />
              </Button>
           </TooltipTrigger>
@@ -59,10 +68,7 @@ export function BookmarkButton({ article, className }: BookmarkButtonProps) {
             variant="ghost"
             size="icon"
             onClick={handleBookmarkClick}
-            className={cn("rounded-full text-accent-foreground/80 transition-colors hover:text-accent-foreground hover:bg-black/10 active:bg-black/20",
-              bookmarked && "text-accent-foreground bg-black/10",
-              className
-            )}
+            className={buttonClasses}
           >
             <Bookmark className={cn("h-5 w-5 transition-transform", bookmarked && "fill-current scale-110")} />
           </Button>
