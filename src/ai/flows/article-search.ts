@@ -146,7 +146,7 @@ export async function articleSearch(
       return {
         results: articles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
         nextPage: null, // Disable pagination for cached views
-        fetchedAt: data.fetchedAt,
+        fetchedAt: data.fetchedAt, // Use the timestamp from Firestore
       };
     } else {
       console.log(`No cache found for category: ${categoryToFetch}. Performing a live fetch as a fallback.`);

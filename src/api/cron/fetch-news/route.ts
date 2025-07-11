@@ -23,7 +23,6 @@ const processArticles = (results: any[]): Article[] => {
     .filter((article: any) => article.title && article.url && article.title !== '[Removed]');
 };
 
-
 export async function GET() {
   if (!db) {
     return NextResponse.json(
@@ -44,75 +43,51 @@ export async function GET() {
   const language = 'en';
 
   try {
-    console.log(`Cron job: Starting to fetch news for all categories.`);
+    const currentHour = new Date().getUTCHours();
+    const isOddHour = currentHour % 2 !== 0;
+
+    const allCategorySlugs = newsCategories.map(c => c.slug);
+    const groupA = allCategorySlugs.slice(0, 8); // top, world, domestic, business, technology, entertainment, sports, science
+    const groupB = allCategorySlugs.slice(8);    // health, politics, crime, education, lifestyle, environment, tourism, other
+
+    const categoriesToFetch = isOddHour ? groupA : groupB;
+
+    console.log(`Cron job: Running for hour ${currentHour} (UTC). Fetching group ${isOddHour ? 'A' : 'B'}: ${categoriesToFetch.join(', ')}`);
 
     const newsCollection = collection(db, 'news');
     
-    const fetchPromises = newsCategories.map(async (category) => {
-      // Using a Map to deduplicate articles by their URL
-      const articleMap = new Map<string, Article>();
-      let nextPage: string | null = null;
-
-      // --- Fetch first page ---
-      const searchParamsPage1 = new URLSearchParams({
+    const fetchPromises = categoriesToFetch.map(async (categorySlug) => {
+      const searchParams = new URLSearchParams({
         apikey: apiKey,
         language,
         country,
-        category: category.slug,
+        category: categorySlug,
         size: '10',
       });
-      const urlPage1 = `https://newsdata.io/api/1/news?${searchParamsPage1.toString()}`;
+      const url = `https://newsdata.io/api/1/news?${searchParams.toString()}`;
       
-      const responsePage1 = await fetch(urlPage1);
-      if (!responsePage1.ok) {
-        console.error(`Newsdata.io API error for category ${category.slug} (Page 1):`, await responsePage1.text());
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.error(`Newsdata.io API error for category ${categorySlug}:`, await response.text());
         return; // Skip this category on error
       }
       
-      const dataPage1 = await responsePage1.json();
-      const articlesPage1 = processArticles(dataPage1.results);
-      articlesPage1.forEach(article => articleMap.set(article.url, article));
-      nextPage = dataPage1.nextPage || null;
+      const data = await response.json();
+      const articles = processArticles(data.results);
 
-      // --- Fetch second page if available ---
-      if (nextPage) {
-        const searchParamsPage2 = new URLSearchParams({
-          apikey: apiKey,
-          language,
-          country,
-          category: category.slug,
-          size: '10',
-          page: nextPage,
-        });
-        const urlPage2 = `https://newsdata.io/api/1/news?${searchParamsPage2.toString()}`;
-
-        const responsePage2 = await fetch(urlPage2);
-        if (!responsePage2.ok) {
-          console.error(`Newsdata.io API error for category ${category.slug} (Page 2):`, await responsePage2.text());
-          // We still save page 1 data even if page 2 fails
-        } else {
-            const dataPage2 = await responsePage2.json();
-            const articlesPage2 = processArticles(dataPage2.results);
-            articlesPage2.forEach(article => articleMap.set(article.url, article));
-        }
-      }
-
-      const allArticles = Array.from(articleMap.values());
-
-      if (allArticles.length > 0) {
-        const docRef = doc(newsCollection, category.slug);
-        // Save deduplicated articles and the timestamp
+      if (articles.length > 0) {
+        const docRef = doc(newsCollection, categorySlug);
         await setDoc(docRef, {
-          articles: allArticles,
+          articles: articles,
           fetchedAt: new Date().toISOString(),
         });
-        console.log(`Successfully fetched and stored ${allArticles.length} articles for category: ${category.name}`);
+        console.log(`Successfully fetched and stored ${articles.length} articles for category: ${categorySlug}`);
       }
     });
 
     await Promise.all(fetchPromises);
 
-    return NextResponse.json({ success: true, message: `News cache updated for all categories.` });
+    return NextResponse.json({ success: true, message: `News cache updated for group ${isOddHour ? 'A' : 'B'}.` });
   } catch (error) {
     console.error('Error fetching news:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

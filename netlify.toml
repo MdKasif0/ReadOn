@@ -12,10 +12,10 @@
 
 # Configuration for Netlify Functions
 # The `fetch-news-cron` function is a scheduled function.
-# The cron schedule "0 */2 * * *" means "at minute 0 of every 2nd hour".
+# The cron schedule "0 * * * *" means "at minute 0 of every hour".
 # This helps stay within the Newsdata.io API free tier limits.
 [functions]
   directory = "netlify/functions"
 
 [functions.fetch-news-cron]
-  schedule = "0 */2 * * *"
+  schedule = "0 * * * *"
