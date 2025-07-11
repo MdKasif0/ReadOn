@@ -22,7 +22,7 @@ export default function InterestsPage() {
         setSelectedInterests(new Set(JSON.parse(storedData)));
       } else {
         // Default interests if nothing is stored
-        const defaultInterests = ['health', 'technology', 'sports', 'politics'];
+        const defaultInterests = ['domestic', 'technology', 'sports', 'politics'];
         setSelectedInterests(new Set(defaultInterests));
       }
     } catch (error) {
@@ -53,7 +53,7 @@ export default function InterestsPage() {
     router.push('/feed');
   };
 
-  const categoriesToShow = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'world' && c.slug !== 'general');
+  const categoriesToShow = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'world' && c.slug !== 'other');
 
   if (!isLoaded) {
     return <div className="h-screen w-full bg-background" />;

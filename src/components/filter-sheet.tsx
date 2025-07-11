@@ -123,8 +123,7 @@ export function FilterSheet() {
     setIsOpen(false);
   };
 
-  const generalCategory = newsCategories.find(c => c.slug === 'general');
-  const otherCategories = newsCategories.filter(c => c.slug !== 'general');
+  const filterableCategories = newsCategories.filter(c => c.slug !== 'top');
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -220,7 +219,7 @@ export function FilterSheet() {
                   Selecting topics will perform a live search.
               </p>
               <div className="grid grid-cols-2 gap-2 pt-2">
-                {[generalCategory, ...otherCategories].filter(Boolean).map(category => (
+                {filterableCategories.map(category => (
                   <div key={category!.slug} className="flex items-center space-x-2">
                     <Checkbox
                       id={`category-${category!.slug}`}

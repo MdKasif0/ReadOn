@@ -41,14 +41,14 @@ function NewsFeed() {
         selectedSlugs = JSON.parse(storedData);
       } else {
         // Default interests if nothing is stored
-        selectedSlugs = ['health', 'technology', 'sports', 'politics'];
+        selectedSlugs = ['domestic', 'technology', 'sports', 'politics'];
       }
       const filteredCategories = newsCategories.filter(c => selectedSlugs.includes(c.slug));
       setDisplayedCategories(filteredCategories);
     } catch (error) {
         console.error('Failed to load interests from localStorage', error);
         // Fallback to a default set of categories
-        setDisplayedCategories(newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'general' && c.slug !== 'world' && c.slug !== 'nation'));
+        setDisplayedCategories(newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'world' && c.slug !== 'other'));
     }
     setIsInterestsLoaded(true);
   }, []);
