@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, Suspense, useCallback } from 'react';
@@ -33,9 +32,6 @@ function NewsFeed() {
   const [displayedCategories, setDisplayedCategories] = useState<typeof newsCategories>([]);
   const [isInterestsLoaded, setIsInterestsLoaded] = useState(false);
   const [articleColors, setArticleColors] = useState<string[]>([]);
-
-  // For frontend-based pagination from cache
-  const [allCachedArticles, setAllCachedArticles] = useState<Article[]>([]);
 
   useEffect(() => {
     try {
@@ -87,7 +83,6 @@ function NewsFeed() {
 
     setIsLoading(true);
     setError(null);
-    setAllCachedArticles([]);
     setArticles([]);
 
     const { query, singleCategory, multiCategories, country, language } = getFilterParams();
@@ -119,22 +114,26 @@ function NewsFeed() {
     const cacheCategory = singleCategory || 'top';
     
     const cachedData = await getArticlesByCategory(cacheCategory);
+    let isCacheStale = true;
+
     if (cachedData && cachedData.articles.length > 0) {
-        setAllCachedArticles(cachedData.articles);
+        console.log(`Loaded ${cachedData.articles.length} articles for '${cacheCategory}' from IndexedDB.`);
         setArticles(cachedData.articles);
         assignColorsToArticles(cachedData.articles);
-        setIsLoading(false);
+        setIsLoading(false); // Stop loading, show cached data immediately
 
         const cacheAge = cachedData.fetchedAt ? Date.now() - new Date(cachedData.fetchedAt).getTime() : Infinity;
         const TWO_HOURS_IN_MS = 2 * 60 * 60 * 1000;
-
-        if (cacheAge < TWO_HOURS_IN_MS) {
+        
+        isCacheStale = cacheAge > TWO_HOURS_IN_MS;
+        if (!isCacheStale) {
             console.log(`Cache for ${cacheCategory} is fresh. Halting network fetch.`);
             return;
         }
          console.log(`Cache for ${cacheCategory} is stale. Fetching from network (Firestore).`);
     }
 
+    // Fetch from network if cache is empty or stale
     try {
       const result = await articleSearch({
         category: cacheCategory,
@@ -142,27 +141,31 @@ function NewsFeed() {
         country: defaultCountry,
       });
       
+      // We got new data from Firestore. Display it and update the cache.
       if (result.results.length > 0) {
-        setAllCachedArticles(result.results);
+        console.log(`Fetched ${result.results.length} articles for '${cacheCategory}' from Firestore. Updating view and cache.`);
         setArticles(result.results);
         assignColorsToArticles(result.results);
         if (result.fetchedAt) {
           await saveArticles(cacheCategory, result.results, result.fetchedAt);
         }
-      } else if (allCachedArticles.length === 0) {
+      } else if (!cachedData || cachedData.articles.length === 0) {
+        // Network fetch returned no articles and we had no cache to show.
         setArticles([]);
       }
 
     } catch (err) {
       console.error('Failed to fetch articles from Firestore:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch news. Please try again later.';
+      // Only show error if we have no articles to display at all.
       if (articles.length === 0) {
         setError(errorMessage);
       }
     } finally {
+      // Ensure loading is false even if we showed cached data initially.
       setIsLoading(false);
     }
-  }, [getFilterParams, defaultLanguage, defaultCountry, articles.length, allCachedArticles.length, isInterestsLoaded]);
+  }, [getFilterParams, defaultLanguage, defaultCountry, isInterestsLoaded, articles.length]);
 
   useEffect(() => {
     fetchArticles();
@@ -171,7 +174,7 @@ function NewsFeed() {
 
 
   const renderContent = () => {
-    if (isLoading || !isInterestsLoaded) {
+    if (isLoading) {
         return (
             <div className="flex h-[calc(100vh-200px)] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin" />

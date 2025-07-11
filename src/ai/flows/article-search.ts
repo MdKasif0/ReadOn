@@ -153,7 +153,7 @@ export async function articleSearch(
       // No cache exists yet, perform a live fetch to populate it.
       // The cron job will keep it updated later.
       const liveResult = await fetchFromNewsdata({
-        categories: [categoryToFetch],
+        categories: categoryToFetch !== 'top' ? [categoryToFetch] : undefined,
         language: input.language,
         country: input.country,
       });
