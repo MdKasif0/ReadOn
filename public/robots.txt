@@ -1,0 +1,6 @@
+# Allow all user agents to crawl the entire site
+User-agent: *
+Allow: /
+
+# Specify the location of the sitemap (optional but recommended)
+# Sitemap: https://read-on.netlify.app/sitemap.xml

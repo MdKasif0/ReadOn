@@ -19,12 +19,12 @@ export async function generateMetadata({ searchParams }: ArticlePageProps): Prom
   }
 
   const decodedUrl = decodeURIComponent(articleUrl);
-  // We attempt to fetch from a server-side cache/DB if available.
   const article = await getArticleByUrl(decodedUrl);
 
   if (!article) {
     return {
       title: 'Article Not Found',
+      description: 'The requested article could not be found.',
     };
   }
 

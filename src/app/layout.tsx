@@ -16,7 +16,10 @@ export const metadata: Metadata = {
   },
   description: "Your daily news, reimagined. Get the latest headlines, powered by intelligent search and personalized for you. Clean, fast, and focused on the news that matters.",
   manifest: "/manifest.json",
-  icon: "/readon-icon.png",
+  icons: {
+    icon: "/readon-icon.png",
+    apple: "/readon-icon.png",
+  },
   openGraph: {
     title: "ReadOn - Your Daily News, Reimagined",
     description: "Clean, fast, and focused on the news that matters. Get personalized headlines and intelligent search in one beautiful app.",
