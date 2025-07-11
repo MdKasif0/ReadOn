@@ -124,7 +124,7 @@ export async function articleSearch(
       country: input.country,
       page: input.page,
     });
-    return searchResult;
+    return { ...searchResult, fetchedAt: new Date().toISOString() };
   }
 
   // Handle category browsing from Firestore cache
