@@ -53,7 +53,7 @@ export default function InterestsPage() {
     router.push('/feed');
   };
 
-  const categoriesToShow = newsCategories.filter(c => c.slug !== 'top' && c.slug !== 'world' && c.slug !== 'other');
+  const categoriesToShow = newsCategories;
 
   if (!isLoaded) {
     return <div className="h-screen w-full bg-background" />;
