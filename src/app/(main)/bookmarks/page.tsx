@@ -7,8 +7,15 @@ import { Info, Search, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArticleGrid } from "@/components/article-grid";
-import { ArticleSkeleton } from "@/components/article-skeleton";
+import { StackedBookmarkCard } from "@/components/stacked-bookmark-card";
+
+const cardColors = [
+    "bg-card-stack-1",
+    "bg-card-stack-2",
+    "bg-card-stack-3",
+    "bg-card-stack-4",
+    "bg-card-stack-5",
+];
 
 export default function BookmarksPage() {
   const { bookmarks } = useBookmarks();
@@ -33,7 +40,7 @@ export default function BookmarksPage() {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <header className="sticky top-0 z-10 p-4 pt-6">
+      <header className="sticky top-0 z-20 p-4 pt-6 bg-background/80 backdrop-blur-sm">
         <div className="mb-4 flex items-center">
             <Button variant="ghost" size="icon" className="-ml-2 h-10 w-10 shrink-0 rounded-full" onClick={() => router.back()}>
                 <ArrowLeft className="h-5 w-5" />
@@ -54,10 +61,26 @@ export default function BookmarksPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 pb-24 pt-4">
+      <main className="flex-1 overflow-y-auto px-4 pb-24 pt-8">
         {bookmarks.length > 0 ? (
           filteredBookmarks.length > 0 ? (
-            <ArticleGrid bookmarks={filteredBookmarks} displayMode="grid" />
+            <div className="relative space-y-[-240px]">
+                 {filteredBookmarks.map((bookmark, index) => (
+                    <div 
+                        key={bookmark.article.url}
+                        className="relative transition-transform duration-300 ease-out hover:!translate-y-[-10px] hover:!rotate-0"
+                        style={{
+                            transform: `rotate(${index * 1.5}deg) translateY(${index * 20}px)`,
+                            zIndex: filteredBookmarks.length - index,
+                        }}
+                    >
+                        <StackedBookmarkCard
+                            bookmark={bookmark}
+                            className={cardColors[index % cardColors.length]}
+                        />
+                    </div>
+                ))}
+            </div>
           ) : (
             <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-card p-12 text-center">
               <Info className="mb-4 h-12 w-12 text-muted-foreground/50" />

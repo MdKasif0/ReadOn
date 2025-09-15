@@ -7,7 +7,7 @@ interface ArticleGridProps {
   articles?: Article[];
   bookmarks?: Bookmark[];
   children?: React.ReactNode;
-  displayMode?: 'grid' | 'stacked' | 'search';
+  displayMode?: 'grid' | 'search';
 }
 
 export function ArticleGrid({ articles, bookmarks, children, displayMode = 'grid' }: ArticleGridProps) {
