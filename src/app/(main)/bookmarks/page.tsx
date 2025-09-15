@@ -61,7 +61,7 @@ export default function BookmarksPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto px-4 pb-24 pt-8">
+      <main className="flex-1 overflow-y-auto px-4 pb-48 pt-8">
         {bookmarks.length > 0 ? (
           filteredBookmarks.length > 0 ? (
             <div className="relative">
