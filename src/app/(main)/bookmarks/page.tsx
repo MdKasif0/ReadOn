@@ -64,11 +64,11 @@ export default function BookmarksPage() {
       <main className="flex-1 overflow-y-auto px-4 pb-24 pt-8">
         {bookmarks.length > 0 ? (
           filteredBookmarks.length > 0 ? (
-            <div className="relative space-y-[-240px]">
+            <div className="relative">
                  {filteredBookmarks.map((bookmark, index) => (
                     <div 
                         key={bookmark.article.url}
-                        className="relative transition-transform duration-300 ease-out hover:!translate-y-[-10px] hover:!rotate-0"
+                        className="relative transition-transform duration-300 ease-out hover:!translate-y-[-10px] hover:!rotate-0 mt-4"
                         style={{
                             transform: `rotate(${index * 1.5}deg) translateY(${index * 20}px)`,
                             zIndex: filteredBookmarks.length - index,
